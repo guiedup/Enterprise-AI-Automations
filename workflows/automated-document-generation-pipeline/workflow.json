@@ -1,0 +1,2098 @@
+{
+  "updatedAt": "2026-01-05T18:31:01.913Z",
+  "createdAt": "2025-10-17T14:46:56.973Z",
+  "id": "eZMO9deQHkUun9sR",
+  "name": "Automated Document Generation Pipeline",
+  "description": "",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "html": "={{ $('Edit Fields').item.json.body.content }}",
+        "destinationKey": "markdown",
+        "options": {
+          "ignore": ""
+        }
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -80
+      ],
+      "id": "b31789ba-5bb4-4d87-a252-01e503c81b51",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "max",
+              "field": "name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        336
+      ],
+      "id": "a2816fbe-9e5d-41a4-8ac9-0ef40a7b3c9a",
+      "name": "Find Latest Document"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1T8Kb02zcnrDcw8Ki5ggYyFhWjq9t_Etf",
+            "mode": "list",
+            "cachedResultName": "Technical Reports",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1T8Kb02zcnrDcw8Ki5ggYyFhWjq9t_Etf"
+          },
+          "whatToSearch": "files",
+          "fileTypes": [
+            "application/vnd.google-apps.document"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        336
+      ],
+      "id": "5ad9f3d3-5c1c-46b1-b523-90f69596c78b",
+      "name": "List Documents in Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1UqzqMKE247VK0ACrtfxuMyPGLpHe_VwBUyA-65im0Uc",
+          "mode": "list",
+          "cachedResultName": "000 - Document Template",
+          "cachedResultUrl": "https://docs.google.com/document/d/1UqzqMKE247VK0ACrtfxuMyPGLpHe_VwBUyA-65im0Uc/edit?usp=drivesdk"
+        },
+        "name": "={{ $("Document Number").item.json.next_doc_number }} - Document ({{ $('GET Part changed name from tlbPecas by OD').item.json.value[0].Pe_x00e7_aID }} - {{ $('GET Part changed name from tlbPecas by OD').item.json.value[0].Pe_x00e7_aNome }}) {{ $('GET OS by ID').item.json.value[0].SN_rem_1 }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -432,
+        864
+      ],
+      "id": "47a58d81-8826-4e54-9417-5e03f699f3b8",
+      "name": "Copy Document Template",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "output": "raw",
+        "filters": {
+          "hasAttachments": true,
+          "foldersToInclude": [
+            "AAMkADQ0OGYxMTUwLWY0YmQtNGViNS04NzRmLWUwZGFiZjIzNmQ2NAAuAAAAAAC2u1WuThCyTarYsZ9On_mCAQD7ktKfiDalS7NqZTCEE96iAAAAAAELAAA=",
+            "AAMkADQ0OGYxMTUwLWY0YmQtNGViNS04NzRmLWUwZGFiZjIzNmQ2NAAuAAAAAAC2u1WuThCyTarYsZ9On_mCAQD7ktKfiDalS7NqZTCEE96iAAA6jTDWAAA="
+          ],
+          "readStatus": "unread",
+          "sender": "admin@light-inst.com.br"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        -80
+      ],
+      "id": "489f6b96-3b0f-43f3-9bc2-4c845ed64061",
+      "name": "Microsoft Outlook Trigger admin lib",
+      "notesInFlow": true,
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "93b6pgjdWodvN2mF",
+          "name": "Microsoft Outlook account LIB"
+        }
+      },
+      "notes": "[MS_TOKEN_REMOVED] Expira em 27/06/2027\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ad4e3796-8e7b-4ffc-9ab5-17234110ca0c",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1056,
+        352
+      ],
+      "id": "170d87aa-4947-458d-aafb-d943d8fe6b36",
+      "name": "Se aprovado:"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf6e6709-f83b-4d87-9f5c-70b792bc9943",
+              "leftValue": "={{ $json.output.PartChanged }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        -80
+      ],
+      "id": "48a2ae44-8542-46aa-a832-0bff8c984200",
+      "name": "Se teve troca de peça"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "[CHAT_ID_REMOVED]",
+        "message": "=New document request:  {{ $json.markdown }}.\n\nDo you want to generate the document for this work order?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        -80
+      ],
+      "id": "ebcc7976-61f8-4b50-a723-11628cac3294",
+      "name": "Pedir aprovação por Telegram",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "7wCq6b6bj9FdP445",
+          "name": "LIB Telegram account"
+        }
+      },
+      "notes": "[NOTES_REMOVED_FOR_SECURITY]"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"PartChanged\": \"True\",\n    \"ID_OS\": \"1234\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        144
+      ],
+      "id": "bcbff543-56f1-4530-8522-8a176ab77a41",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        144
+      ],
+      "id": "9f06ac1f-256f-48ce-8a7a-fdd4ed021fb0",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        144
+      ],
+      "id": "174077b0-c54e-420b-8ddb-1967390b0454",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      },
+      "notes": "[GROQ_API_KEY_REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        560
+      ],
+      "id": "d02b4f1b-da0c-4b6f-ade8-d6d14c4ad0f4",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        560
+      ],
+      "id": "7bb26878-6d51-49fe-b156-b56a5e17607e",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      },
+      "notes": "[GROQ_API_KEY_REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Garantia\": \"True\",\n\t\"ReportedProbleam\": \"#022\",\n    \"AnaliseCorrecao\": \"Part changed\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        560
+      ],
+      "id": "f60d9d93-ccb1-4ad3-8430-dc111c062432",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $('GET OS by ID').item.json.value[0].Data }}",
+        "format": "yyyy-MM-dd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        864
+      ],
+      "id": "5ac13121-583b-4f91-90ff-ac55240dcfef",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "jsCode": "const assinatura = $('GET OS by ID').first().json.value[0].Assinatura || '';\n\nconst base64LimpoCliente = assinatura.includes('base64,')\n  ? assinatura.split('base64,')[1]\n  : assinatura;\n\nreturn [\n  {\n    json: {\n      base64LimpoCliente\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        864
+      ],
+      "id": "f6e1dcb0-5d52-478d-9e53-4aa4069d0e33",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64LimpoCliente",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        864
+      ],
+      "id": "dabea3bf-02f9-427a-94ba-732bdaf825d4",
+      "name": "Convert to File",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 13,
+        "height": 13,
+        "resizeOption": "percent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        704,
+        864
+      ],
+      "id": "485e360d-cee6-4a5b-9520-ef0312f4c857",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "operation": "rotate",
+        "rotate": 90,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        480,
+        864
+      ],
+      "id": "49ca64d7-7436-45ea-956c-285e6c0caf27",
+      "name": "Edit Image1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee45b1cc-0fef-4d7a-b4a3-c16cecfbeac9",
+              "name": "max_doc_number",
+              "value": "={{ $json.max_name.substring(0, 3) }}",
+              "type": "string"
+            },
+            {
+              "id": "77b2e87a-0f84-40c6-97fa-8dd7e06dd97f",
+              "name": "next_doc_number",
+              "value": "={{ parseInt($json.max_name.substring(0, 3)) + 1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        336
+      ],
+      "id": "4ba39d36-de3e-4fe0-b5ec-7c3cabe1986d",
+      "name": "Document Number"
+    },
+    {
+      "parameters": {
+        "url": "=https://lightinstbr.sharepoint.com/sites/LIB/_api/web/lists/GetByTitle('db_ordem_servico_1_1')/items?$top=1&$filter=Id eq {{ $('AI Agent - analisa troca de peça').item.json.output.ID_OS }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftSharePointOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        336
+      ],
+      "id": "453bcddc-5c15-4041-ac15-bbe9e6194283",
+      "name": "GET OS by ID",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "y776MMRnnyMj0SmX",
+          "name": "Microsoft SharePoint account LIB"
+        }
+      },
+      "notes": "[NOTES_REMOVED_FOR_SECURITY]"
+    },
+    {
+      "parameters": {
+        "url": "=https://lightinstbr.sharepoint.com/sites/LIB/_api/web/lists/GetByTitle('tblPecas')/items?$filter=Pe_x00e7_aID eq '{{ $json.value[0].Pe_x00e7_as }}'",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftSharePointOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "Pe_x00e7_aID",
+              "value": "={{ $json.value[0].Pe_x00e7_as }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        336
+      ],
+      "id": "0c753c93-cf15-465f-bcb9-dde16557bc3a",
+      "name": "GET Part changed name from tlbPecas by OD",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "y776MMRnnyMj0SmX",
+          "name": "Microsoft SharePoint account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 📥 Pegando os dados do primeiro item da entrada (geralmente vindo de um HTTP Request)\nconst items = $input.first().json.value;\n\n// 🛑 Verifica se a lista 'items' está vazia ou indefinida\nif (!items || items.length === 0) {\n  // Retorna um erro indicando que não há dados disponíveis\n  return [{ json: { error: \"Nenhum item retornado\" } }];\n}\n\n// 📅 Extrai a primeira data diretamente do primeiro report da lista\nconst primeiraData = items[0].Data_desse_relat_x00f3_rio;\n\n// 🔁 Processa todos os reports para extrair e converter as datas\nconst datasOrdenadas = items\n  .map(item => ({\n    // Armazena a string original da data\n    raw: item.Data_desse_relat_x00f3_rio,\n    // Converte a string para objeto Date para ordenação\n    data: new Date(item.Data_desse_relat_x00f3_rio)\n  }))\n  // ❌ Remove objetos com datas inválidas (ex: string malformada)\n  .filter(entry => !isNaN(entry.data))\n  // 🔃 Ordena as datas do item mais antigo para o mais recente\n  .sort((a, b) => a.data - b.data);\n\n// 📆 Pega a última data da lista ordenada (a mais recente)\n// Usa optional chaining (?) para evitar erro se a lista estiver vazia após o filtro\nconst ultimaData = datasOrdenadas[datasOrdenadas.length - 1]?.raw;\n\n// ✅ Retorna um único item JSON com a primeira e a última data encontradas\nreturn [\n  {\n    json: {\n      primeiraData,\n      ultimaData\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        336
+      ],
+      "id": "26585c76-8ada-4b22-8332-bfe71b3f766d",
+      "name": "Code - Inst and last RT dates"
+    },
+    {
+      "parameters": {
+        "url": "=https://lightinstbr.sharepoint.com/sites/LIB/_api/web/lists/GetByTitle('db_Reports_22')/items?$filter=Engenheiro_Responsavel eq '{{ $('GET OS by ID').item.json.value[0].Engenheiro }}'&$top=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftSharePointOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        336
+      ],
+      "id": "7a9217f6-5746-4574-94dc-78938873ec3a",
+      "name": "GET Inst and RTs - Assinatura Eng",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "y776MMRnnyMj0SmX",
+          "name": "Microsoft SharePoint account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://lightinstbr.sharepoint.com/sites/LIB/_api/web/lists/GetByTitle('db_Reports_22')/items?$filter=Cliente eq '{{ $('GET OS by ID').item.json.value[0].Cliente }}'",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftSharePointOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        336
+      ],
+      "id": "c31588e2-8047-4d6b-9fd5-c79163556a97",
+      "name": "GET Inst and RTs - Assinatura Cliente",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "y776MMRnnyMj0SmX",
+          "name": "Microsoft SharePoint account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64LimpoEng",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        1152
+      ],
+      "id": "7127f94c-0983-4a83-a9c3-eab198b1182c",
+      "name": "Convert to File1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 9,
+        "height": 9,
+        "resizeOption": "percent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        704,
+        1152
+      ],
+      "id": "3902983a-4e78-4b9b-bc91-854515c2edd2",
+      "name": "Edit Image2"
+    },
+    {
+      "parameters": {
+        "operation": "rotate",
+        "rotate": 90,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        480,
+        1152
+      ],
+      "id": "bc7895c5-4d6d-44a8-bfb7-fd2ac2f00f3d",
+      "name": "Edit Image3"
+    },
+    {
+      "parameters": {
+        "name": "assinaturacliente.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "13KY51qbJBMy15-heOcdlmrLkSHnAxXQg",
+          "mode": "list",
+          "cachedResultName": "Engenharia Light Instruments",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/13KY51qbJBMy15-heOcdlmrLkSHnAxXQg"
+        },
+        "options": {
+          "simplifyOutput": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        928,
+        864
+      ],
+      "id": "3555f330-61dd-481e-a53b-26a61a6aec4a",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "assinaturaeng.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "13KY51qbJBMy15-heOcdlmrLkSHnAxXQg",
+          "mode": "list",
+          "cachedResultName": "Engenharia Light Instruments",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/13KY51qbJBMy15-heOcdlmrLkSHnAxXQg"
+        },
+        "options": {
+          "simplifyOutput": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        928,
+        1152
+      ],
+      "id": "c411a462-3adf-421e-ae1e-aa856fa4650d",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $("Copy Document Template").item.json.id }}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "requests",
+              "value": "={{ [{ \"insertInlineImage\": { \"uri\":$json.webContentLink , \"location\": { \"segmentId\": \"\", \"index\": 369 } } }] }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "name": "Inserir assinatura cliente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        864
+      ],
+      "id": "03d084b5-98c1-4a2d-89b9-dd9260bd2546",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "WxJvnOjprfBB6Jbn",
+          "name": "Google Docs account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $("Copy Document Template").item.json.id }}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "requests",
+              "value": "={{ [{ \"insertInlineImage\": { \"uri\":$json.webContentLink , \"location\": { \"segmentId\": \"\", \"index\": 1189 } } }] }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "name": "Inserir assinatura eng",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        1152
+      ],
+      "id": "ec5d2962-d177-48e7-bcd7-91ec699759bb",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "WxJvnOjprfBB6Jbn",
+          "name": "Google Docs account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Upload file').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1584,
+        864
+      ],
+      "id": "03188a5f-3d71-4766-829a-d6878e1531c5",
+      "name": "Delete a file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Upload file1').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1584,
+        1152
+      ],
+      "id": "fe038e2e-5359-4eeb-928a-51d2b5c3b488",
+      "name": "Delete a file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "[CHAT_ID_REMOVED]",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "={{ $("Copy Document Template").item.json.name }}.pdf"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        1520
+      ],
+      "id": "c1682e61-660a-43b6-b2c6-2a68aa34c7a8",
+      "name": "Send Document",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "7wCq6b6bj9FdP445",
+          "name": "LIB Telegram account"
+        }
+      },
+      "notes": "[NOTES_REMOVED_FOR_SECURITY]"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $("Copy Document Template").item.json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        480,
+        1520
+      ],
+      "id": "43fd35cc-2c82-4cea-bb11-7893cfe1e57e",
+      "name": "Download file",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $("Copy Document Template").item.json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "[Cliente]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].Cliente }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[Document Number]",
+              "replaceText": "={{ $("Document Number").item.json.next_doc_number }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[Endereço]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].Endere_x00e7_o }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[Garantia]",
+              "replaceText": "={{ $("AI Agent - Extract Document Fields").item.json.output.Garantia }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[SN Console]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].Console }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[SN Aplicador]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].Aplicador }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[N pulsos console]",
+              "replaceText": "={{ String($('GET OS by ID').item.json.value[0].N_x00fa_mero_x0020_de_x0020_Puls0) }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[N pulsos aplicador]",
+              "replaceText": "={{ String($('GET OS by ID').item.json.value[0].N_x00fa_mero_x0020_de_x0020_Puls) }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[problema reportado]",
+              "replaceText": "={{ $("AI Agent - Extract Document Fields").item.json.output.ReportedProbleam }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[análise e correção]",
+              "replaceText": "={{ $("AI Agent - Extract Document Fields").item.json.output.AnaliseCorrecao }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[part number]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].Pe_x00e7_as }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[sn deixada]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].SN_dex_1 }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[sn removida]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].SN_rem_1 }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[engenheiro]",
+              "replaceText": "={{ $('GET OS by ID').item.json.value[0].Engenheiro }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[data]",
+              "replaceText": "={{ $now.format('dd-MM-yyyy') }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[ass cliente]"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[assinatura eng]"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[Install Date]",
+              "replaceText": "={{ $('Code - Inst and last RT dates').item.json.primeiraData.split('T')[0] }}\n"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[Last Maint. Date]",
+              "replaceText": "={{ $('Code - Inst and last RT dates').item.json.ultimaData.split('T')[0] }}\n"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1520
+      ],
+      "id": "98a4fa5e-47b2-4df2-baac-a82b0c138cf9",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "WxJvnOjprfBB6Jbn",
+          "name": "Google Docs account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3848f847-f0ec-40f2-9cbc-2d7a29b90eea",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        1520
+      ],
+      "id": "d7d0be7a-1593-4a1e-a029-3e55271fa560",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "654882ed-f581-4685-bef4-8aad9af79c20",
+              "leftValue": "={{ $('Inserir assinatura cliente').item.json.statusMessage }}",
+              "rightValue": "OK",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "93113c6f-2a27-4cef-90b1-057f784f2871",
+              "leftValue": "={{ $('Inserir assinatura eng').item.json.statusMessage }}",
+              "rightValue": "OK",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        1520
+      ],
+      "id": "6281d80e-1084-4274-b9e8-51ca1da4bd3a",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const assinatura_eng = $('GET Inst and RTs - Assinatura Eng').last().json.value[0].Assinatura || '';\n\nconst base64LimpoEng = assinatura_eng.includes('base64,')\n  ? assinatura_eng.split('base64,')[1]\n  : assinatura_eng;\n\nreturn [\n  {\n    json: {\n      base64LimpoEng\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1152
+      ],
+      "id": "7be90952-f031-48d0-9af0-ab96c7126802",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "chatId": "[CHAT_ID_REMOVED]",
+        "text": "=Document has been saved to Drive successfully 😉",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        1440
+      ],
+      "id": "1f40b00a-4981-4267-836f-5880f861778c",
+      "name": "Send a text message1",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "credentials": {
+        "telegramApi": {
+          "id": "7wCq6b6bj9FdP445",
+          "name": "LIB Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analise o seguinte corpo de email e defina se poderá haver troca de peça ou não, sendo certeza que houve troca de peça caso tenha alguma informação na linha \"Peças usadas:\".\nPense antes de responder usando a tool \"Think\"\nAtenção: responda apenas true ou false, sem aspas nem explicações, em json no campo \"PartChanged\".\nAlém disso, identifique o ID da OS e preencha em \"ID_OS\" em json\n\nIdentificando necessidade de envio de peça para a oficina para testes, a resposta é automaticamente true.\nCorpo do email para análise:  {{ $json.body.content }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -800,
+        -80
+      ],
+      "id": "978a3f17-f371-4323-89d5-9154c9ed2e47",
+      "name": "AI Agent - analisa troca de peça",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Analise o seguinte corpo de email e escreva um json com os seguintes campos, todos em inglês:\n\nGarantia (True or False), \nReportedProbleam (Número do erro, estara na parte do \"chamado\" ou  \"situação observada\", não é o id da OS) #xxx e/ou resumo do campo chamado no email, nao usar o mesmo texto, precisa estar em inglês. Primeiro interprete em português e depois trazuda para inglês)\nAnaliseCorrecao (Resumo em inglês de situação observada e solução do email em uma unica frase)\n\n\nPense antes de responder usando a tool \"Think\".\n\nEscreva somente dentro do JSON e preencha todos os campos.\n\nCorpo do email para análise:  {{ $('Edit Fields').item.json.body.content }}\n\nÉ possivel que o usuário ja tenha recebido um json seu e deseje ajustes.\n\nAjustes pedidos pelo usuário: {{ $json.data.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant that just answer in json format in english, without explanations.",
+          "maxIterations": 2,
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -592,
+        336
+      ],
+      "id": "bce4741f-4abf-4d7f-9237-387de484102b",
+      "name": "AI Agent - Extract Document Fields",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1WNstUuSdA338PJf6tpHatvLFZluomMML-S-zaUH4IPI/edit?usp=sharing",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        1056
+      ],
+      "id": "d3323bc8-3a31-40f6-84a5-052eeb71588b",
+      "name": "Get a document - Para localização de posições",
+      "notesInFlow": true,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "WxJvnOjprfBB6Jbn",
+          "name": "Google Docs account LIB"
+        }
+      },
+      "disabled": true,
+      "notes": "Regra: o que vale é o endIndex"
+    },
+    {
+      "parameters": {
+        "content": "## Insert signatures in document",
+        "height": 560,
+        "width": 1568
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        768
+      ],
+      "typeVersion": 1,
+      "id": "241b1d85-c879-4277-9a19-19650da8fb2d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Pegar infos para montagem do relatório",
+        "height": 480,
+        "width": 2240,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1120,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "32a802e1-dfa9-4157-80a6-512537fa84e4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Analise de email e autorização para montagem do relatório",
+        "height": 432,
+        "width": 1200,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1120,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "ba609d1f-21a8-48d5-8714-c787e08f0722",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Montagem final e entrega",
+        "height": 512,
+        "width": 1568,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "816df4e7-20f4-4eab-9de0-3153f4d799fe",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "[CHAT_ID_REMOVED]",
+        "message": "Tá bom assim ou prefere alterar?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "✅ Enviar para Israel",
+            "disapproveLabel": "❌ Precisa de alteração"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        1520
+      ],
+      "id": "be0b03fc-cf51-47eb-9764-368c576b8ad4",
+      "name": "Enviar confirmação",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "7wCq6b6bj9FdP445",
+          "name": "LIB Telegram account"
+        }
+      },
+      "notes": "[NOTES_REMOVED_FOR_SECURITY]"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "[CHAT_ID_REMOVED]",
+        "message": "O que vc quer alterar?",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        1616
+      ],
+      "id": "1cf7467f-af63-47cd-bd70-4d4f7c8b7831",
+      "name": "Perguntar o que quer alterar",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "credentials": {
+        "telegramApi": {
+          "id": "7wCq6b6bj9FdP445",
+          "name": "LIB Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $("Copy Document Template").item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1616,
+        1616
+      ],
+      "id": "cd7635be-1d80-4a66-a679-a768160f7173",
+      "name": "Deletar relatório reprovado",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZTbzB4NN8do6lAwt",
+          "name": "Google Drive account LIB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "document-pipeline",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        -240
+      ],
+      "id": "c236699d-eaf3-4830-957a-d8da26423df6",
+      "name": "Webhook automate",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faaf7709-834a-4f5f-abc5-550f351491e5",
+              "name": "=body.content",
+              "value": "={{ $json.body.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1072,
+        -80
+      ],
+      "id": "0058853e-7fa3-45d1-b1ed-cd957d5a2159",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Pedir aprovação por Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Latest Document": {
+      "main": [
+        [
+          {
+            "node": "Document Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Documents in Drive": {
+      "main": [
+        [
+          {
+            "node": "Find Latest Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy Document Template": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook Trigger admin lib": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se aprovado:": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Extract Document Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Se teve troca de peça": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Pedir aprovação por Telegram": {
+      "main": [
+        [
+          {
+            "node": "Se aprovado:",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent - analisa troca de peça",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - analisa troca de peça",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - analisa troca de peça",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent - Extract Document Fields",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Extract Document Fields",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent - Extract Document Fields",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Edit Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image1": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Number": {
+      "main": [
+        [
+          {
+            "node": "GET OS by ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET OS by ID": {
+      "main": [
+        [
+          {
+            "node": "GET Part changed name from tlbPecas by OD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Part changed name from tlbPecas by OD": {
+      "main": [
+        [
+          {
+            "node": "GET Inst and RTs - Assinatura Eng",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Inst and last RT dates": {
+      "main": [
+        [
+          {
+            "node": "Copy Document Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Inst and RTs - Assinatura Cliente": {
+      "main": [
+        [
+          {
+            "node": "Code - Inst and last RT dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Inst and RTs - Assinatura Eng": {
+      "main": [
+        [
+          {
+            "node": "GET Inst and RTs - Assinatura Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Edit Image3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image3": {
+      "main": [
+        [
+          {
+            "node": "Edit Image2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Inserir assinatura cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image2": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Inserir assinatura eng",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir assinatura cliente": {
+      "main": [
+        [
+          {
+            "node": "Delete a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir assinatura eng": {
+      "main": [
+        [
+          {
+            "node": "Delete a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a file": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a file1": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Document": {
+      "main": [
+        [
+          {
+            "node": "Enviar confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deletar relatório reprovado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - analisa troca de peça": {
+      "main": [
+        [
+          {
+            "node": "Se teve troca de peça",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Extract Document Fields": {
+      "main": [
+        [
+          {
+            "node": "List Documents in Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document - Para localização de posições": {
+      "main": [
+        []
+      ]
+    },
+    "Enviar confirmação": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perguntar o que quer alterar": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Extract Document Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar relatório reprovado": {
+      "main": [
+        [
+          {
+            "node": "Perguntar o que quer alterar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook automate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - analisa troca de peça",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Microsoft Outlook Trigger admin lib": {
+      "lastTimeChecked": "2026-04-10T01:09:28.359-03:00"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Get a document - Para localização de posições": [
+      {
+        "json": {
+          "formattedDate": "2025-08-19"
+        }
+      }
+    ],
+    "Webhook automate": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.tivas.com.br",
+            "user-agent": "azure-logic-apps/1.0 (workflow 8d6bc444452643cf8a4435a50d12bb31; version 08584375094551404329) microsoft-flow/1.0",
+            "content-length": "1445",
+            "accept-encoding": "gzip, deflate",
+            "accept-language": "pt-BR",
+            "content-type": "application/json; charset=utf-8",
+            "traceparent": "00-62040483e883739beb8a5f3c00415dd5-4252a7f1c17839eb-00",
+            "workermetadata": "PAuto/MTA",
+            "x-forwarded-for": "4.202.253.37",
+            "x-forwarded-host": "n8n.tivas.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "4f4739484f43",
+            "x-ms-action-tracking-id": "968daee8-a726-4ccd-8903-86a82518982b",
+            "x-ms-client-keywords": "testFlow",
+            "x-ms-client-request-id": "36686127-e5a6-40c5-b597-c2699b49fabe",
+            "x-ms-client-tracking-id": "08584375125897270988230664374CU04",
+            "x-ms-correlation-id": "36686127-e5a6-40c5-b597-c2699b49fabe",
+            "x-ms-execution-location": "brazilsouth",
+            "x-ms-tracking-id": "36686127-e5a6-40c5-b597-c2699b49fabe",
+            "x-ms-workflow-id": "8d6bc444452643cf8a4435a50d12bb31",
+            "x-ms-workflow-name": "2edf7513-dce4-4733-b755-478f4f84dd31",
+            "x-ms-workflow-operation-name": "HTTP",
+            "x-ms-workflow-resourcegroup-name": "selfhostingresourcegroup",
+            "x-ms-workflow-run-id": "08584375094483499142050597498CU22",
+            "x-ms-workflow-run-tracking-id": "bcf7a27e-41c7-49f4-a5a3-73bacd24de55",
+            "x-ms-workflow-subscription-id": "Default-f3bb1242-fa95-4f01-9151-4bf1567fa49f",
+            "x-ms-workflow-system-id": "/locations/brazilsouth/scaleunits/prod-27/workflows/8d6bc444452643cf8a4435a50d12bb31",
+            "x-ms-workflow-version": "08584375094551404329",
+            "x-real-ip": "4.202.253.37"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "content": "<p class=\"editor-paragraph\">Prezado Fernando,<br><br>O engenheiro Guilherme Leite realizou o atendimento de Aeronáutica Brasília (OABR) 3 de Esplanada dos Ministérios, 00, Bloco M - sobreloja, Brasília, DF no dia 2025-10-21.<br>Em anexo esta o PDF da OS.<br><br>- ID da OS: <br>- OS esta em aberto: False<br>- Atendimento Presencial: True<br>- Chamado: Error #015 aparece quando liga máquina. <br>- Situação Observada: Mesmo confirmando o error #015 ele não sai da tela inicial.<br>- Solução: Troca da Placa Mãe. <br>- Condição para fechar OS: N/A<br>- Peças Usadas: LI-FG0030A   <br>- Custos: R$<br>- Observações: Acompanhado pela Dra. Mariana. Testes de água e energia - OK.<br>- Link para o item criado no sharepoint: https://lightinstbr.sharepoint.com/sites/LIB/_layouts/15/listform.aspx?PageType=4&ListId=7fe9d5e1%2Db0cc%2D4b38%2Db768%2D1a92400fd321&ID=1254&ContentTypeID=0x01000536BEDF35C219408F3D3CD5C568B4C5<br><br><br>PS: email enviado automaticamente pelo app de serviço técnico.<br><br>Atenciosamente,<br><br>Engenheiro <b><strong class=\"editor-text-bold\"></strong></b>Guilherme Leite<br>Instagram: litetouchbr<br>Cel: +55 (11) 91657-6044&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Web: www.light-inst.com.br<br>Email: sac@light-inst.com &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;Av. Ibirapuera, 2907 - cj.1411 - Moema, SP<br><br></p><br>"
+          },
+          "webhookUrl": "https://n8n.tivas.com.br/webhook/document-pipeline",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Microsoft Outlook Trigger admin lib": [
+      {
+        "json": {
+          "@odata.etag": "W/\"CQAAABYAAAD7ktKfiDalS7NqZTCEE96iAALvP62s\"",
+          "id": "AAMkADQ0OGYxMTUwLWY0YmQtNGViNS04NzRmLWUwZGFiZjIzNmQ2NABGAAAAAAC2u1WuThCyTarYsZ9On_mCBwD7ktKfiDalS7NqZTCEE96iAAA6jTDWAAD7ktKfiDalS7NqZTCEE96iAALw5VaEAAA=",
+          "createdDateTime": "2026-01-05T17:46:54Z",
+          "lastModifiedDateTime": "2026-01-05T17:46:55Z",
+          "changeKey": "CQAAABYAAAD7ktKfiDalS7NqZTCEE96iAALvP62s",
+          "categories": [],
+          "receivedDateTime": "2026-01-05T17:46:55Z",
+          "sentDateTime": "2026-01-05T17:46:50Z",
+          "hasAttachments": true,
+          "internetMessageId": "<CP5P284MB3103AC775897B8EBBB38F7C5B786A@CP5P284MB3103.BRAP284.PROD.OUTLOOK.COM>",
+          "subject": "Ordem de serviço - Rosi Cristina ",
+          "bodyPreview": "Prezado Fernando,\r\n\r\nO engenheiro Caio Vitale realizou o atendimento de Rosi Cristina de Rua Duílio, 326, , Lapa, Sao Paulo, São Paulo, SP no dia 2025-12-14.\r\nEm anexo esta o PDF da OS.\r\n\r\n- ID da OS: 1297\r\n- OS esta em aberto: False\r\n- Atendimento Presen",
+          "importance": "normal",
+          "parentFolderId": "AAMkADQ0OGYxMTUwLWY0YmQtNGViNS04NzRmLWUwZGFiZjIzNmQ2NAAuAAAAAAC2u1WuThCyTarYsZ9On_mCAQD7ktKfiDalS7NqZTCEE96iAAA6jTDWAAA=",
+          "conversationId": "AAQkADQ0OGYxMTUwLWY0YmQtNGViNS04NzRmLWUwZGFiZjIzNmQ2NAAQAIYxnclDCGFNmUYYQgZDPIc=",
+          "conversationIndex": "AQHcfmtFhjGdyUMIYU2ZRhhCBkM8hw==",
+          "isDeliveryReceiptRequested": false,
+          "isReadReceiptRequested": false,
+          "isRead": false,
+          "isDraft": false,
+          "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkADQ0OGYxMTUwLWY0YmQtNGViNS04NzRmLWUwZGFiZjIzNmQ2NABGAAAAAAC2u1WuThCyTarYsZ9On%2BmCBwD7ktKfiDalS7NqZTCEE96iAAA6jTDWAAD7ktKfiDalS7NqZTCEE96iAALw5VaEAAA%3D&exvsurl=1&viewmodel=ReadMessageItem",
+          "inferenceClassification": "focused",
+          "body": {
+            "contentType": "html",
+            "content": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><p class=\"editor-paragraph\">Prezado Fernando,<br><br>O engenheiro Caio Vitale realizou o atendimento de Rosi Cristina de Rua Duílio, 326, , Lapa, Sao Paulo, São Paulo, SP no dia 2025-12-14.<br>Em anexo esta o PDF da OS.<br><br>- ID da OS: 1297<br>- OS esta em aberto: False<br>- Atendimento Presencial: False<br>- Chamado: Quebra do pino branco com presilha metálica da tampa da garrafa.<br>- Situação Observada: Quebra do pino branco com presilha metálica da tampa da garrafa.<br>- Solução: Substituição da tampa da garrafa.<br>- Condição para fechar OS: N/A<br>- Peças Usadas: LI-FG0043A <br>- Custos: R$<br>- Observações: Quebrou durante a instalação, sem forçar. <br>- Link para o item criado no sharepoint: https://lightinstbr.sharepoint.com/sites/LIB/_layouts/15/listform.aspx?PageType=4&amp;ListId=7fe9d5e1%2Db0cc%2D4b38%2Db768%2D1a92400fd321&amp;ID=1297&amp;ContentTypeID=0x01000536BEDF35C219408F3D3CD5C568B4C5<br><br><br>PS: email enviado automaticamente pelo app de serviço técnico.<br><br>Atenciosamente,<br><br>Engenheiro<b><strong class=\"editor-text-bold\"> </strong></b>Caio Vitale<br>Instagram: litetouchbr<br>Cel: +55 (11) 91657-6044&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Web: www.light-inst.com.br<br>Email: sac@light-inst.com &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;Av. Ibirapuera, 2907 - cj.1411 - Moema, SP<br><br></p><br></body></html>"
+          },
+          "sender": {
+            "emailAddress": {
+              "name": "admin lib",
+              "address": "admin@light-inst.com.br"
+            }
+          },
+          "from": {
+            "emailAddress": {
+              "name": "admin lib",
+              "address": "admin@light-inst.com.br"
+            }
+          },
+          "toRecipients": [
+            {
+              "emailAddress": {
+                "name": "organiza@light-inst.com",
+                "address": "organiza@light-inst.com"
+              }
+            }
+          ],
+          "ccRecipients": [
+            {
+              "emailAddress": {
+                "name": "admin lib",
+                "address": "admin@light-inst.com.br"
+              }
+            },
+            {
+              "emailAddress": {
+                "name": "sac@light-inst.com",
+                "address": "sac@light-inst.com"
+              }
+            },
+            {
+              "emailAddress": {
+                "name": "tony@light-inst.com",
+                "address": "tony@light-inst.com"
+              }
+            },
+            {
+              "emailAddress": {
+                "name": "davida@db-assuntosregulatorios.com",
+                "address": "davida@db-assuntosregulatorios.com"
+              }
+            }
+          ],
+          "bccRecipients": [],
+          "replyTo": [],
+          "flag": {
+            "flagStatus": "notFlagged"
+          }
+        },
+        "binary": {
+          "attachment_0": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Ordem de Serviço - Rosi Cristina .pdf",
+            "id": "filesystem-v2:workflows/eZMO9deQHkUun9sR/executions/temp/binary_data/84dfca5c-7908-4aed-8576-a370598a04d0",
+            "fileSize": "209 kB"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Pedir aprovação por Telegram": [
+      {
+        "json": {
+          "data": {
+            "approved": true
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "7e823b66-c12c-4562-8c96-179c4529dfcb",
+  "activeVersionId": "7e823b66-c12c-4562-8c96-179c4529dfcb",
+  "versionCounter": 67,
+  "triggerCount": 2,
+  "tags": [
+    {
+      "updatedAt": "2025-06-26T14:55:09.527Z",
+      "createdAt": "2025-06-26T14:55:09.527Z",
+      "id": "BmEnl6YDpSQDNS8B",
+      "name": "LIB"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2025-10-17T14:46:56.993Z",
+      "createdAt": "2025-10-17T14:46:56.993Z",
+      "role": "workflow:owner",
+      "workflowId": "eZMO9deQHkUun9sR",
+      "projectId": "W8sWcqcBrkOu1smK",
+      "project": {
+        "updatedAt": "2025-06-09T13:58:57.074Z",
+        "createdAt": "2025-06-09T13:56:10.068Z",
+        "id": "W8sWcqcBrkOu1smK",
+        "name": "Guilherme Pereira <guidu.projects+moliver@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "9b483db9-4235-4a16-af1b-27d1fed8b1a7"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 2.0",
+    "description": "Migração pro servidor lib"
+  }
+}

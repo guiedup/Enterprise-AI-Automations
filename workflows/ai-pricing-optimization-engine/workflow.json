@@ -1,0 +1,1084 @@
+{
+  "updatedAt": "2025-10-02T14:51:12.000Z",
+  "createdAt": "2025-09-10T21:19:17.033Z",
+  "id": "kYOdvLXW0CVFiPMg",
+  "name": "IA precificadora",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -400
+      ],
+      "id": "6e5f00b8-c1ba-4add-a6b7-0f6351d9732d",
+      "name": "Date & Time1"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Input a armazenar"
+            },
+            {
+              "name": "numero do lead"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        96
+      ],
+      "id": "bf7037f5-88de-4cd1-872e-81b656f5c536",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "description": "Chame essa tool para salvar informações sobre a pessoa com quem esta conversando.",
+        "workflowId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "IA precificadora"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Input a armazenar": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Input_a_armazenar', ``, 'string') }}",
+            "numero do lead": "{{ $('When chat message received').item.json.sessionId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Input a armazenar",
+              "displayName": "Input a armazenar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "numero do lead",
+              "displayName": "numero do lead",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -176
+      ],
+      "id": "ff1a9c4d-82aa-4aba-9003-d686a11516ed",
+      "name": "Memory Long"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=O que tinha: {{ $json.resume }}\n\nE o que chegou de novo para Colocar:  {{ $('When Executed by Another Workflow').item.json['Input a armazenar'] }}",
+        "options": {
+          "systemMessage": "Você é uma IA especialista em organizar a memória sobre o lead, eu vou dar o que tinha e o que agora tem de novo e no seu output deve retornar organizado por markdown e só o que você organizou, nada além disso! deixe resumido porem sem tirar coisas essenciais, cada melhoria que você faz deixa a memória mais organizada.\n\nRETORNE SOMENTE O SUMMARY"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        96
+      ],
+      "id": "9a1ad815-db0b-4d23-9c3d-d7c3200565f9",
+      "name": "AI Memorizadora"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}",
+        "tableName": "n8n_chat_histories_quesia"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        -176
+      ],
+      "id": "0bd90a10-51b4-402f-8ef3-b8ea642ef660",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblClientesQuesia"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "number",
+              "value": "={{ $('When chat message received').item.json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        192,
+        -400
+      ],
+      "id": "6206d480-a396-4ed5-bda0-36455a67600a",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        -176
+      ],
+      "id": "629929c8-8ffc-4baf-a631-2ddd27fc2f4c",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3119cea0-3e05-4256-bc67-1dbfd94a9c6c",
+              "name": "Resumo",
+              "value": "={{ $json.resume }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        96
+      ],
+      "id": "b1731ec7-98bb-49de-99d2-19cfbe1fe0b1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblClientesQuesia"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ $('When Executed by Another Workflow').item.json['numero do lead'] }}",
+            "resume": "={{ $json.output }}",
+            "created_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "resume",
+              "displayName": "resume",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        96
+      ],
+      "id": "9d34f46c-45e8-44a4-8eef-c77b673586dd",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblClientesQuesia"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "number",
+              "value": "={{ $json['numero do lead'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        96
+      ],
+      "id": "6b10260c-3fe8-469f-a2c1-0918e4e475dd",
+      "name": "Select rows from a table1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Date & Time1').item.json.currentDate }}\nResumo sobre o usuário: \"{{ $json.resume }}\"\nMensagem: {{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "## Persona e missão\nVocê é **QuesIA**, consultora de **precificação** e gestão financeira em clínicas odontológicas. Sua missão:\n- Conduzir uma conversa **acolhedora e consultiva**.\n- Coletar dados essenciais para **calcular a hora clínica** e avaliar a **profilaxia**.\n- **Registrar silenciosamente** cada dado no **Memory Long**.\n- Entregar um **diagnóstico personalizado e acionável** e convidar para sessão com **Quesia Cardoso** (ligações entre **11h–15h**).\n\n## Tom e ritmo\n- Linguagem **simples, humana e didática**; exemplos curtos, sem erros de portugues.\n- **1–2 perguntas por vez**, avançando só após a resposta.\n- Escuta ativa e leveza (“perfeito”, “ótimo, obrigado”).\n\n## Ferramentas\n- **Memory Long (obrigatório e silencioso)**  \n  Após **cada** resposta, registre uma frase curta no padrão:  \n  “O usuário **é/tem/faz/usa/cobra/fatura/paga/aceita/contata…**: <informação>.”\n  (Inclua identificação/contato, consentimentos, números de negócio.)\n- **Calculator**  \n  Use sempre que houver conta (hora clínica, margem da profilaxia, números, matemática, finanças). TODA conta numérica precisa ser feita obrigatoriamente com a calculadora, mesmo as simples, para evitar erros.\n  Para o usuário, sempre mostre o resultado da calculadora antes de seguir. \n- **Think**\n  Use para informações difíceis, como na análise final.\n\n## Coleta em etapas\n**Identificação e contato**\n1) Nome completo\n3) Telefone com DDD\n4) É **dono(a) de clínica** ou **aluga sala**?\n\n**Dados para precificação**\n- **Custo fixo mensal** (faixa: 15 mil , 25 mil , 35mil, 50 mil , 70mil , 80 mil).  \n- **Carga horária semanal** (20h / 40h / 44h).  \n- **Nº de cadeiras/salas**. \n- **Faturamento médio mensal** (10–30k / 30–50k / 50–100k / +100k).  \n(Com isso, calcule o faturamento por hora usando a tool Calculator) \n- **Pacientes novos/semana** (1–10 / 10–20 / 20–40 / +40).  \n- **Imposto %** e **taxa de cartão %**.  \n- **Profilaxia**: **preço atual** e **tempo** (min).\n- **Repasse a dentista parceiro**? (se houver)\n\n> Se faltar algum dado: proponha **padrão** e confirme.  \n> Ex.: “Se estiver ok, uso **imposto 15%** e **cartão 5%**; **materiais ~R$30**. Pode ser?”\n\n## Metodologia\n- **Precificação consciente**: hora clínica + tempo*nºcadeiras + materiais (~R$30) + impostos (6–15%) + cartão (3–10%); **alvo de margem ≥ 30%**.  \n- **Segurança financeira**: **meta ≈ 3× custo fixo**.  \n- **Comercial e liderança**: só aprofunde quando o usuário pedir (metas, prospecção/reativação, política de repasse e descontos, conversão na recepção, organização financeira).\n- Use a tool \"Calculator\" na conta para ser mais preciso nas informações\n\n## Regras de cálculo (usar Tool Calculator; comunicar só o resultado)\n- **Hora clínica (estimada)**  \n  Hora ≈ (Custo fixo + Equipamentos/120) / (Horas semanais × 4,33 × 0,8 × Nºcadeiras)\n  • Se **não houver valor de equipamentos**, calcule **sem depreciação**.  \n- **Profilaxia (margem líquida)**  \n  Lucro = (Valor cobrado - imposto sobre esse valor - taxa de cartão sobre esse valor - (tempo dedicado X hora clínica) - custo do material e laboratório) / Valor cobrado\n  • **Margem ideal ≥ 30%**.\n- **Meta de faturamento**  \n  ≈ **3× custo fixo**.\n\n## Entrega do diagnóstico (antes do convite)\nEntregue em **5 blocos curtos e personalizados**:\n1) **Hora clínica** (estimada) e fator que mais pesou  \n2) **Profilaxia**: lucro/prejuízo, **margem estimada**, **preço/tempo sugeridos**  \n3) **Faturamento vs ideal (3× custo fixo)** e **gap**  \n4) **Pontos fortes & riscos** (estrutura, fluxo de novos, metas, precificação)  \n5) **3 ações práticas imediatas** (claras e realizáveis)\n\n## Análise final (use a tool \"Think\" para uma análise e português precisos):\n> \"[nome], aqui está uma simulação, com dados aproximados, da análise de sua precificação:\n> Sua hora clínica está estimada em cerca de x, considerando o que você me passou. O fator que mais pesou foi o y.\n\n> Na profilaxia que você cobra a x por x minutos, seu lucro líquido é de aproximadamente x, o que representa uma margem de cerca de x%. A margem ideal é de pelo menos 30%, então x. Você poderia ajustar o preço para cerca de R$ x para melhorar a margem ou reduzir o tempo para aumentar a lucratividade.\n\n> Pontos fortes: você tem uma boa estrutura com equipamentos e atende novos pacientes regularmente. Riscos: custo fixo alto e margem da profilaxia um pouco abaixo do ideal.\n\n> Três ações práticas para você:\n\n> Avaliar reajuste do preço da profilaxia para pelo menos R$x.\n> Buscar aumentar o número de pacientes novos para melhorar o faturamento.\n> Revisar custos fixos para identificar possíveis reduções.\n\n> O valor que você cobra em um procedimento\nnão deve ser um problema, afinal você precisa\nviabilizar a entrega desse serviço, concorda?\nO seu desafio é tornar o valor que você cobra\njustificável na cabeça do seu paciente.\nO ponto chave é: antes do paciente comprar\nseu serviço, ele compra você, sua credibilidade,\nsua reputação, o atendimento na sua clínica\ne principalmente o sentimento que ele teve após\npercorrer toda essa jornada até você\"\n\n## Convite\n  > “Atenção: se você for selecionado, a própria Quesia Cardoso ou alguém de sua equipe entrará em contato para que você tenha oportunidade de uma sessão estratégica sobre o seu negócio. As ligações acontecem **todos os dias entre 11h e 15h**. **Aguarde nosso contato nesse horário** e mantenha o telefone disponível, combinado?”\n\n\n## Micro turnos (exemplo de abertura)\n- \"Olá! Me chamo QuesIA e vou fazer sua análise! Vou te fazer algumas perguntas e com as suas respostas conseguirei te entregar uma simulação da análise do seu consultório, o valor aproximado da sua hora clínica e também te informar se o valor que você cobra hoje em uma profilaxia te dá lucro! É rapidinho, vamos lá? Se precisar de ajuda pra responder, só perguntar que eu te ajudo\" (esperar resposta)\n- “Perfeito. Pode me passar seu **Nome e telefone de contato com DDD**? Se você for selecionado(a) para uma sessão estratégica individual, você receberá uma ligação.”  \n- “Você é dono(a) de consultório ou aluga consultório?”  \n- “Sobre custos: seu **custo fixo mensal** fica mais perto de **15k, 25k, 35k ou +70k**?”\n- (Siga com as demais perguntas **sempre 1–2 por vez**; se faltar dado, proponha padrão e confirme.)\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        -400
+      ],
+      "id": "f9094348-ce38-42b9-af6b-9fef6ac575d3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "guidu.projects@gmail.com",
+        "subject": "teste",
+        "message": "teste n8n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        -176
+      ],
+      "id": "0cbfb792-3747-4519-bbf5-29572921f0b3",
+      "name": "Send a message in Gmail",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qBWRFxnrpP5wQTzo",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        -176
+      ],
+      "id": "c871e817-39a1-48fe-bf89-4985f906dc1c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "60B6eH2a6O8POYog",
+          "name": "Quesia OpenAi account"
+        }
+      },
+      "notes": "[OPENAI_API_KEY_REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -176
+      ],
+      "id": "d01e8186-3b17-40dd-a211-d0b0bb43e81a",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "path": "download-leads",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -640
+      ],
+      "id": "8489e670-0595-40bb-9851-4393a9fca369",
+      "name": "Webhook",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblClientesQuesia_classificados",
+          "mode": "list",
+          "cachedResultName": "tblClientesQuesia_classificados"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -64,
+        -640
+      ],
+      "id": "31836b7c-3fbe-4de8-9c08-b31975e6699a",
+      "name": "Select rows from a table2",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "=leads-ia.xlsx"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        -640
+      ],
+      "id": "1315779b-1767-4952-b341-1229800f0ae4",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        -640
+      ],
+      "id": "e656c4e6-fbee-44f6-84fd-e9e7abe67789",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "amount": 20,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1280,
+        96
+      ],
+      "id": "b76d8082-6bc0-4413-86fe-e6f88e9cb591",
+      "name": "Wait",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblClientesQuesia"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "number",
+              "value": "={{ $json['numero do lead'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1456,
+        96
+      ],
+      "id": "60c9efdd-efe2-4609-8a18-87ebbbf6591e",
+      "name": "Select rows from a table3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c1267db-40aa-4ecd-ada0-cd25210c03f3",
+              "leftValue": "={{ $('Insert or update rows in a table').item.json.resume }}",
+              "rightValue": "={{ $('Select rows from a table1').item.json.resume }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        384
+      ],
+      "id": "75856c5c-1160-4550-bcb9-6e66cfa61eb2",
+      "name": "Parou de responder?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Select rows from a table1').item.json.resume }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Voce é um assistente prestativo.\nResponda somente em formato json, com nome do usuário, telefone, se foi classificado (chamado para sessão com Quesia ou faturamento maior que 50k) e um resumo sobre ele(a)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        368
+      ],
+      "id": "4706d4b4-6db4-4532-b78c-ce20eaf36ae1",
+      "name": "AI Memorizadora1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Nome\": \"João Almeida\",\n\t\"Telefone\": \"5511912345678\",\n    \"Classificado\": true,\n    \"Resumo\": \"João tem uma clínica, precifica bem a profilaxia, precisa melhorar em tais coisas..., detalhes financeiros: 55k de faturamento, 2 cadeiras...\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        576
+      ],
+      "id": "2f472b21-823c-45d9-88d9-89dfcec92135",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "33e05ba0-a0c8-48ee-8958-75b54f3a3e03",
+              "leftValue": "={{ $json.output.Classificado }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        368
+      ],
+      "id": "c4b666fe-ce98-4679-a35c-d8ae18c11d5f",
+      "name": "Classificado?"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblClientesQuesia_classificados",
+          "mode": "list",
+          "cachedResultName": "tblClientesQuesia_classificados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $json.output.Nome }}",
+            "telefone": "={{ $json.output.Telefone }}",
+            "resumo": "={{ $json.output.Resumo }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resumo",
+              "displayName": "resumo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        368
+      ],
+      "id": "b3b8e9d9-f959-4f38-9001-9ca82381ca15",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Olá",
+        "options": {
+          "inputPlaceholder": "Olá! Quero receber a análise do meu negócio e saber qual valor aproximado da minha hora clínica!",
+          "subtitle": "",
+          "title": "Análise do consultório / Estimativa de Hora Clínica",
+          "customCss": ":root {\n  /* Colors */\n  --chat--color-primary: #0f2d52;              /* azul-marinho principal */\n  --chat--color-primary-shade-50: #0d2747;     /* hover */\n  --chat--color-primary-shade-100: #0a1f38;    /* active */\n  --chat--color-secondary: #f5c14b;            /* dourado/acento */\n  --chat--color-secondary-shade-50: #e0ac3d;   /* dourado mais fechado */\n  --chat--color-light: #f5f7fb;                /* fundo claro */\n  --chat--color-light-shade-50: #e8ecf5;       /* bordas */\n  --chat--color-light-shade-100: #c9cfdb;      /* divisórias */\n  --chat--color-medium: #bfc6d1;               /* neutro médio */\n  --chat--color-dark: #0b1a33;                 /* cabeçalho/texto escuro */\n  --chat--color-disabled: #777980;             /* estado desabilitado */\n  --chat--color-typing: #404040;               /* indicador de digitação */\n\n\n  /* Base Layout */\n  --chat--spacing: 1rem;\n  --chat--border-radius: 0.25rem;\n  --chat--transition-duration: 0.15s;\n  --chat--font-family: (\n    -apple-system,\n    BlinkMacSystemFont,\n    'Segoe UI',\n    Roboto,\n    Oxygen-Sans,\n    Ubuntu,\n    Cantarell,\n    'Helvetica Neue',\n    sans-serif\n  );\n\n  /* Window Dimensions */\n  --chat--window--width: 400px;\n  --chat--window--height: 600px;\n  --chat--window--bottom: var(--chat--spacing);\n  --chat--window--right: var(--chat--spacing);\n  --chat--window--z-index: 9999;\n  --chat--window--border: 1px solid var(--chat--color-light-shade-50);\n  --chat--window--border-radius: var(--chat--border-radius);\n  --chat--window--margin-bottom: var(--chat--spacing);\n\n  /* Header Styles */\n  --chat--header-height: auto;\n  --chat--header--padding: var(--chat--spacing);\n  --chat--header--background: var(--chat--color-dark);\n  --chat--header--color: var(--chat--color-light);\n  --chat--header--border-top: none;\n  --chat--header--border-bottom: none;\n  --chat--header--border-left: none;\n  --chat--header--border-right: none;\n  --chat--heading--font-size: 2em;\n  --chat--subtitle--font-size: inherit;\n  --chat--subtitle--line-height: 1.8;\n\n  /* Message Styles */\n  --chat--message--font-size: 1rem;\n  --chat--message--padding: var(--chat--spacing);\n  --chat--message--border-radius: var(--chat--border-radius);\n  --chat--message-line-height: 1.5;\n  --chat--message--margin-bottom: calc(var(--chat--spacing) * 1);\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--bot--border: none;\n  --chat--message--user--background: var(--chat--color-secondary);\n  --chat--message--user--color: var(--chat--color-white);\n  --chat--message--user--border: none;\n  --chat--message--pre--background: rgba(0, 0, 0, 0.05);\n  --chat--messages-list--padding: var(--chat--spacing);\n\n  /* Toggle Button */\n  --chat--toggle--size: 64px;\n  --chat--toggle--width: var(--chat--toggle--size);\n  --chat--toggle--height: var(--chat--toggle--size);\n  --chat--toggle--border-radius: 50%;\n  --chat--toggle--background: var(--chat--color-primary);\n  --chat--toggle--hover--background: var(--chat--color-primary-shade-50);\n  --chat--toggle--active--background: var(--chat--color-primary-shade-100);\n  --chat--toggle--color: var(--chat--color-white);\n\n  /* Input Area */\n  --chat--textarea--height: 50px;\n  --chat--textarea--max-height: 30rem;\n  --chat--input--font-size: inherit;\n  --chat--input--border: 0;\n  --chat--input--border-radius: 0;\n  --chat--input--padding: 0.8rem;\n  --chat--input--background: var(--chat--color-white);\n  --chat--input--text-color: initial;\n  --chat--input--line-height: 1.5;\n  --chat--input--placeholder--font-size: var(--chat--input--font-size);\n  --chat--input--border-active: 0;\n  --chat--input--left--panel--width: 2rem;\n\n  /* Button Styles */\n  --chat--button--color: var(--chat--color-light);\n  --chat--button--background: var(--chat--color-primary);\n  --chat--button--padding: calc(var(--chat--spacing) * 1 / 2) var(--chat--spacing);\n  --chat--button--border-radius: var(--chat--border-radius);\n  --chat--button--hover--color: var(--chat--color-light);\n  --chat--button--hover--background: var(--chat--color-primary-shade-50);\n  --chat--close--button--color-hover: var(--chat--color-primary);\n\n  /* Send and File Buttons */\n  --chat--input--send--button--background: var(--chat--color-white);\n  --chat--input--send--button--color: var(--chat--color-light);\n  --chat--input--send--button--background-hover: var(--chat--color-primary-shade-50);\n  --chat--input--send--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--input--file--button--background: var(--chat--color-white);\n  --chat--input--file--button--color: var(--chat--color-secondary);\n  --chat--input--file--button--background-hover: var(--chat--input--file--button--background);\n  --chat--input--file--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--files-spacing: 0.25rem;\n\n  /* Body and Footer */\n  --chat--body--background: var(--chat--color-light);\n  --chat--footer--background: var(--chat--color-light);\n  --chat--footer--color: var(--chat--color-dark);\n}\n\n\n/* You can override any class styles, too. Right-click inspect in Chat UI to find class to override. */\n.chat-message {\n\tmax-width: 50%;\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -272,
+        -400
+      ],
+      "id": "de972066-22d5-4bcc-8ee4-777d0216efec",
+      "name": "When chat message received",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    }
+  ],
+  "connections": {
+    "Date & Time1": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Long": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Memorizadora": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table1": {
+      "main": [
+        [
+          {
+            "node": "AI Memorizadora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Memorizadora",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Memorizadora1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table3": {
+      "main": [
+        [
+          {
+            "node": "Parou de responder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parou de responder?": {
+      "main": [
+        [
+          {
+            "node": "AI Memorizadora1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Memorizadora1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Memorizadora1": {
+      "main": [
+        [
+          {
+            "node": "Classificado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classificado?": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Date & Time1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "Input a armazenar": "O usuário é Quésia, telefone 11 981160001, aceita ser chamada.",
+          "numero do lead": "{{ $('When chat message received').item.json.sessionId }}"
+        }
+      }
+    ]
+  },
+  "versionId": "b07d7902-c642-4478-93b8-070d57a6e538",
+  "activeVersionId": "b07d7902-c642-4478-93b8-070d57a6e538",
+  "versionCounter": 13,
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-09-10T21:19:17.038Z",
+      "createdAt": "2025-09-10T21:19:17.038Z",
+      "role": "workflow:owner",
+      "workflowId": "kYOdvLXW0CVFiPMg",
+      "projectId": "W8sWcqcBrkOu1smK",
+      "project": {
+        "updatedAt": "2025-06-09T13:58:57.074Z",
+        "createdAt": "2025-06-09T13:56:10.068Z",
+        "id": "W8sWcqcBrkOu1smK",
+        "name": "Guilherme Pereira <guidu.projects+moliver@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "9b483db9-4235-4a16-af1b-27d1fed8b1a7"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

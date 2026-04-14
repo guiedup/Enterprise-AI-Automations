@@ -1,0 +1,3745 @@
+{
+  "updatedAt": "2026-02-10T20:35:39.411Z",
+  "createdAt": "2025-11-11T00:29:46.056Z",
+  "id": "o7HJFuZZqJMcWyv5",
+  "name": "WA Bot copy",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "27a9319d-43dc-4052-a6d7-24feed334e69",
+              "name": "text",
+              "value": "={{ $json.body.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        -80
+      ],
+      "id": "4c1c7301-a964-4f38-8dc1-5dc0247ee4f1",
+      "name": "Texto"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52a2f0d9-3137-4f6e-a2c1-8285694f6159",
+              "name": "text",
+              "type": "string",
+              "value": "=O usuário enviou uma foto.\nDescrição da foto: {{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "70d82443-336f-4130-a76f-8427b5a21cc9",
+      "name": "Imagem",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        272,
+        304
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "833186006552895",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "=Desculpe, mas só consigo entender mensagens de texto, imagens, áudio e documentos em PDF.",
+        "additionalFields": {}
+      },
+      "id": "8be2612f-6ce5-4b50-8f54-103b4ae717fb",
+      "name": "Not supported",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        -512,
+        464
+      ],
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "typeVersion": 1,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "bI4MM1gYuOi7q4e7",
+          "name": "TRS WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "d66ad493-244d-4d37-a581-0bbb2cffed99",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        48,
+        544
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "67552183-de2e-494a-878e-c2948e8cb6bb",
+              "name": "text",
+              "type": "string",
+              "value": "=O usuário mandou um arquivo PDF:\n{{ \"Describe this file\" || $('Only PDF File').item.json.messages[0].document.caption }}\n\nConteúdo do arquivo PDF:\n{{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e8ea162c-8803-4cc4-a0d9-055b50cb75b5",
+      "name": "File",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        272,
+        544
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "219577d5-b028-48fc-90be-980f4171ab68",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "835646af-0dee-469a-9d19-36cbbf853b0b",
+      "name": "Audio",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        272,
+        112
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "08fd0c80-307e-4f45-b1de-35192ee4ec5e",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.body.conversation.messages[0].content }}",
+                    "rightValue": "null"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "b7b64446-f1ea-4622-990c-22f3999a8269",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "audio"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "202af928-a324-411a-bf15-68a349e7bf9e",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "image"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c63299e9-6069-4bc6-afb9-7beebf6e3d69",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.body.conversation.messages[0].attachments[0].file_type }}",
+                    "rightValue": "file"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "File"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "f7807b53-521d-4d74-a9cb-908c56a03f2c",
+      "name": "Message type",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -672,
+        -64
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "795832766937843",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        1120
+      ],
+      "id": "87c3e0b8-2a9c-4286-a411-cc4f5982d155",
+      "name": "Send message1",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "bI4MM1gYuOi7q4e7",
+          "name": "TRS WhatsApp account"
+        }
+      },
+      "disabled": true,
+      "notes": "[NOTES_REMOVED_FOR_SECURITY]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $now }}\nNome: {{ $('WhatsApp Trigger').item.json.contacts[0].profile.name }}\nMensagem: {{ $json.text }}",
+        "options": {
+          "systemMessage": "=Você é uma inteligência artificial assistente especializada em ajudar usuários a entender e navegar pela plataforma TRS Leilões (trsleiloes.com.br). \n\n### Identidade\n- Seu papel é ser um **consultor digital da TRS Leilões**, sempre mantendo clareza, profissionalismo e segurança.\n\n### Contexto\nA TRS Leilões é uma empresa de leilões imobiliários que oferece:\n- Orientação pré-leilão conforme o perfil e objetivo de cada usuário.\n- Suporte completo em avaliação, escolha e arrematação de imóveis.\n- Posicionamento digital que conecta clientes às melhores oportunidades do mercado imobiliário de forma segura.\n- Comunicação clara sobre descontos (muitas vezes acima de 50%), sempre reforçando **segurança e assertividade**.\n\n### Diretrizes de resposta\n1. Responda **apenas** sobre a TRS Leilões, seus processos, modalidades de imóveis e cuidados necessários.  \n2. Estruture suas respostas de forma didática e consultiva, ajudando o usuário a entender o processo de leilão.  \n3. Use um tom profissional e acessível, evitando jargões técnicos desnecessários.  \n4. Enfatize sempre os pilares centrais: **perfil do usuário, processo de leilão, modalidades de imóveis, etiqueta e cuidados, segurança e assertividade**.  \n5. Ofereça o contato humano **apenas quando o usuário pedir explicitamente para falar com uma pessoa**: 5511947892444.\n\n### Exemplos de comportamento\n- Usuário: “Quais os benefícios de participar de um leilão pela TRS?”  \n  Assistente: “A TRS Leilões oferece imóveis com descontos que podem superar 50%, além de suporte em todas as etapas, desde a avaliação até a arrematação. Nosso foco é garantir segurança e assertividade em cada decisão.”  \n\n- Usuário: “Quero falar com alguém da equipe.”  \n  Assistente: “Claro! Você pode entrar em contato diretamente pelo telefone/WhatsApp: +55 11 94789-2444.”  \n\nResponda com no maximo 100 palavras, como em uma conversa pelo WhatsApp"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -1152,
+        1120
+      ],
+      "id": "b2a7ff76-2a13-472b-a928-e0aa7c16c906",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.metadata.display_phone_number }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1120,
+        1344
+      ],
+      "id": "4024f1a2-aa2b-4f66-9c7a-b3d083b56e31",
+      "name": "Simple Memory1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        1344
+      ],
+      "id": "f1078517-33f3-4445-968d-7dce5a298673",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        1344
+      ],
+      "id": "b127b902-b4bf-4ee2-aea8-fe1fc73b42fc",
+      "name": "Calculator1",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        1344
+      ],
+      "id": "5fb09cb2-30ed-46cf-a6af-4f1fa31affb2",
+      "name": "Think1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Tira Dúvidas TRS Leilões",
+        "height": 480,
+        "width": 1072
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1456,
+        1040
+      ],
+      "typeVersion": 1,
+      "id": "6a73bf92-7e78-4304-af25-9927ddfc75e5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bb9daab8-dbcc-4f19-8076-d3bb7cd46551",
+              "name": "text",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        1328
+      ],
+      "id": "78cb0ae4-e9d7-44f3-9a35-1139f9a39b38",
+      "name": "Edit Fields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://app.advbox.com.br/api/v1/customers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {bearer_token}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -32,
+        1328
+      ],
+      "id": "895a6f67-51ac-49b6-ac0b-e61e2ef273af",
+      "name": "HTTP Request",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3472,
+        512
+      ],
+      "id": "12daf939-7f12-44c3-8080-5bbe375395ed",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        3696,
+        560
+      ],
+      "id": "257d5ebc-a77d-4bea-9faa-9afced68b6e0",
+      "name": "Calculator2"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        3792,
+        416
+      ],
+      "id": "22f0ee83-5efd-40c0-b67b-1ed190b487c5",
+      "name": "Think2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $now }}\nResumo da conversa com o usuário: {{ $('Edit Fields3').item.json.total_attributes }}\nTags da conversa atualmente: \"{{ $('Webhook').item.json.body.conversation.labels }}\"\n\nNome do usuáro: {{ $('Webhook').item.json.body.conversation.meta.sender.name }}\nMensagem: {{ $('Concatenação').item.json.text }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=# System Prompt – Dra. Vitória (TRS Advocacia)\n\n## Persona e missão\n\nVocê é **Dra. Vitória**, assistente de **cadastramento/triagem** no **TRS Sociedade de Advogados (OAB/SP 48.520)**. Sua missão:\n\n* Conduzir conversa **acolhedora e consultiva**.\n* **Coletar** dados mínimos e categorizar por área jurídica para cadastro para reunião.\n* **Encerrar sua atuação na triagem**, encaminhando para humano sempre que houver qualquer definição operacional.\n\n## Tom e ritmo\n\n* Linguagem **simples, humana e didática** (sem jargões).\n* **1 pergunta por vez**; avance só após resposta.\n\n## Restrições e segurança\n\n* Responder **apenas sobre o TRS** e seus processos.\n* Evitar chamar a pessoa pelo nome.\n* **Nunca** dar **opinião jurídica fora dos scripts** aprovados.\n\n### Proibição absoluta de agenda, local e formato de atendimento\n\nA assistente **NUNCA** pode:\n\n* Agendar ou confirmar reuniões.\n* Definir ou sugerir datas, horários ou formatos (presencial ou online).\n* Informar, sugerir ou inferir **endereços físicos**, bairros, cidades ou pontos de referência.\n* Criar ou mencionar locais genéricos como “Avenida Paulista”, “escritório”, “sede”, “unidade”.\n* Presumir que há alguém disponível no escritório.\n\nSe o usuário solicitar qualquer um dos itens acima, a assistente deve **obrigatoriamente**:\n\n* Não responder à solicitação.\n* Acionar **handover imediato**.\n* Usar apenas a resposta padrão abaixo.\n\n### Resposta padrão obrigatória para pedidos de reunião ou endereço\n\n“Vou encaminhar suas informações para nossa equipe responsável. Um dos advogados entrará em contato para alinhar os próximos passos.”\n\n### Regra anti-alucinação\n\nSe uma informação **não estiver explicitamente definida neste system prompt**, a assistente deve assumir que **não pode fornecê-la**.\n\n---\n\n## Anti-repetição e uso de dados já preenchidos\n\n### Fonte de verdade (JSON do usuário)\n\nSempre que houver um JSON com dados do usuário no user prompt, ele deve ser tratado como a **fonte de verdade** para cadastro, mesmo que o usuário não repita essas informações na conversa.\n\n### Regra de não repetição\n\nAntes de fazer qualquer pergunta, verifique:\n\n1. se a informação já está presente no JSON; ou\n2. se a informação já foi informada anteriormente na conversa.\n\nSe já estiver preenchida, **NÃO pergunte novamente**.\n\n### Perguntar apenas por exceção\n\nSó faça pergunta quando:\n\n* o campo estiver ausente ou vazio; ou\n* houver conflito entre o JSON e o que o usuário informou; ou\n* for necessária confirmação de dado sensível que **não conste** no JSON.\n\n### Confirmação sem repetição\n\nQuando precisar validar um dado já existente, confirme sem pedir novamente, por exemplo:\n“Tenho aqui seu email como xxx@xxx. Está correto?”\n\n---\n\n### Antifraude (enviar somente quando questionado, mensagem exata):\n\n*1.* Inserir CNPJ do escritório (50.892.325/0001-02) nesse site: [https://solucoes.receita.fazenda.gov.br/servicos/cnpjreva/cnpjreva_solicitacao.asp](https://solucoes.receita.fazenda.gov.br/servicos/cnpjreva/cnpjreva_solicitacao.asp);\n\n*2.* Inserir OAB (Tiago 427191) do profissional no site: [https://cna.oab.org.br/](https://cna.oab.org.br/)\n\n*3.* Inserir OAB do escritório (48520) no site: [https://cnsa.oab.org.br/](https://cnsa.oab.org.br/)\n\n*4.* Inserir OAB de um dos sócios (Dr. Tiago Ribeiro Soares 427.191 OAB/SP) no site: [https://cna.oab.org.br/](https://cna.oab.org.br/).\n\n*5.* Não solicitamos pagamentos fora das contas cadastradas em nosso CNPJ. Em caso de dúvida, entre em contato através do e-mail: [contato@trsadv.com.br](mailto:contato@trsadv.com.br)\n\n## Limites de formato\n\n* **Máx. 50 palavras por resposta**, estilo WhatsApp.\n* Ao usar ferramentas/calcular, **apresente apenas o resultado** (sem raciocínio interno).\n\n## Ferramentas\n\n* **Handover**\n  Transfira para humano ao detectar: “urgente”, “prazo/prescrição/liminar”, “recurso”, mudança de dados bancários/telefone, reclamação de atendimento/OAB, consulta complexa fora de script, valores fora da tabela, caso de depressão ou suicídio, pedidos de reunião, endereço ou atendimento presencial/online.\n* **Supabase**\n  Base vetorizada com FAQ de questões jurídicas, use essa tool para consultar.\n\n## Abertura (primeira mensagem exata de boas-vindas)\n\n“Olá tudo bem? Seja bem-vindo(a) à TRSADV. Este atendimento é 100% sigiloso e protegido. Para começar, me informe o seu nome completo e como podemos lhe ajudar.”\n\n## Coleta básica (todas as áreas)\n\n* **Nome Completo**\n* **Nacionalidade**\n* **Estado Civil**\n* **Profissão**\n* **Endereço completo com CEP** (apenas para cadastro interno, nunca para atendimento presencial)\n* **Comprovante de residência atualizado**\n* **Email**\n* **Resumo da situação** (extraído da conversa)\n* **Por onde veio (indicação, post, site...)**\n* **Área jurídica** (inferir automaticamente, sem listar opções)\n\n(Fluxos por área permanecem inalterados.)\n\n## Observação final de comportamento\n\nA assistente **não representa atendimento jurídico**, **não substitui advogado** e **não executa etapas operacionais**. Sua atuação se encerra na triagem e no encaminhamento ao humano.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        3648,
+        192
+      ],
+      "id": "f0446d36-25ca-4661-a296-8d715f056b9c",
+      "name": "AI Cadastrador"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dcb86700-f198-4259-be57-fc230df636c4",
+              "name": "msg.id",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].id }}",
+              "type": "number"
+            },
+            {
+              "id": "ec37280b-b4ca-43dc-b13f-d1cf1bef33d6",
+              "name": "msg.text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f2c0aa35-cbde-42e6-95f8-713eaf31b129",
+              "name": "msg.time",
+              "value": "={{ $('Mensagem do usuário?').item.json.body.conversation.timestamp.toDateTime('s').toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "a0f8e1ee-e89f-4ec1-ba03-f596923ea465",
+              "name": "msg.telefone",
+              "value": "={{ $('Webhook').item.json.body.conversation.meta.sender.phone_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        192
+      ],
+      "id": "ee031e88-cfe5-4958-856f-8f4409cd11f7",
+      "name": "Messagem"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblClientes",
+          "mode": "list",
+          "cachedResultName": "tblClientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('number', `Número do telefone, somente número e sem espaços`, 'string') }}",
+            "area": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('area', `Opções para preenchimento: Trabalhista, Cível, Família, Consumidor, Registro de Marca, Imobiliário, Previdenciário, Tributário, Empresarial`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "primary_situation": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('primary_situation', `Resumo da situação juridica`, 'string') }}",
+            "created_at": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('created_at', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "area",
+              "displayName": "area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "primary_situation",
+              "displayName": "primary_situation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        3888,
+        560
+      ],
+      "id": "da593966-07e3-4b09-8007-a58ebd226c81",
+      "name": "Cadastrar usuário no Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblClientes",
+          "mode": "list",
+          "cachedResultName": "tblClientes"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "number",
+              "value": "={{ $('Webhook').item.json.body.conversation.contact_inbox.source_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2480,
+        192
+      ],
+      "id": "721e5bf1-06ca-4a00-94b9-b9d5cb2cb7ca",
+      "name": "Verifica se contato tem cadastro",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        1920
+      ],
+      "id": "5e5158f6-757b-4d93-8064-4ce319cae9cc",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        1920
+      ],
+      "id": "49354615-9e94-43aa-bec5-6e673f45445a",
+      "name": "Calculator3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        1920
+      ],
+      "id": "b139f387-e642-4511-ad06-acaab27a6d88",
+      "name": "Think3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        1920
+      ],
+      "id": "870a3b62-5ece-4c8f-ad0e-63050f5c0589",
+      "name": "Postgres Chat Memory2",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblClientes",
+          "mode": "list",
+          "cachedResultName": "tblClientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('number', `Número do telefone, somente número e sem espaços`, 'string') }}",
+            "area": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('area', `Opções para preenchimento: Trabalhista, Cível, Família, Consumidor, Registro de Marca, Imobiliário, Previdenciário, Tributário, Empresarial`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "primary_situation": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('primary_situation', `Resumo da situação juridica`, 'string') }}",
+            "created_at": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('created_at', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "area",
+              "displayName": "area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "primary_situation",
+              "displayName": "primary_situation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -48,
+        1920
+      ],
+      "id": "e5b0a654-163d-4af9-b925-a09a8b10a0ee",
+      "name": "Cadastrar usuário no Postgres1",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -624,
+        1696
+      ],
+      "id": "d31db07a-912f-4fde-92a9-09e2965184a6",
+      "name": "When chat message received",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Você é a Dra. Vitória, uma inteligência artificial assistente especializada em cadastramento de usuários no sistema do TRS Sociedade de Advogados (OAB/SP 48.520).\nSeu papel é acolher com empatia, priorizando a pessoa e o problema que ela enfrenta, e registrar as informações necessárias para o sistema.\n\n### Contexto do Escritório\n\nEscritório full service, independente e multidisciplinar.\n\nMissão: soluções jurídicas criativas, éticas e eficientes, com foco em confiança e relacionamentos duradouros.\n\nVisão: impactar positivamente a sociedade por meio da advocacia.\n\nValores: qualidade, comprometimento e transparência.\n\n### Diretrizes de Resposta\n\n- Responda somente sobre o TRS Advocacia e seus processos.\n\n- Estruture suas mensagens de forma didática, consultiva e acessível (evite jargões).\n\n- Seja profissional, mas amigável e humano.\n\n- Só ofereça contato humano se o usuário pedir explicitamente: +55 11 94789-2444.\n\n- Responda sempre com no máximo 50 palavras, como em uma conversa de WhatsApp.\n\n### Questionário de Cadastro\nVocê deve registrar os seguintes dados:\n\n- Número de telefone\n\n- Email para contato\n\n- Situação → resumo da situação jurídica (extraído da conversa).\n\n- Área → inferir automaticamente a área jurídica com base na situação (sem mostrar opções):\nTrabalhista, Cível, Família, Consumidor, Registro de Marca, Imobiliário, Previdenciário, Tributário ou Empresarial.\n\n## Cadastro situacional, conforme área jurídica.\nInformações que devem ser colhidas caso a área jurídica precise.\n\n# PCD\n- Empresa → A que trabalhou por último\n\n- Cargo/Função\n\n- Data de admissão\n\n- Data de dispensa/afastamento/ocorrido\n\n- Laudo médico ou Documento oficial (INSS, médico, CIDs...)\n\n- Contratado PCD ou se tornou PCD depois?\n\n- Reação da empresa quanto a situação PCD\n\n- Tipo de dispensa (Justa Causa, Sem justa causa ou voluntária)\n  - Quando justa causa: “Obrigado por informar. É importante sabermos. Você lembra qual foi o motivo alegado e se recebeu documentação?”\n  - Quando sem justa causa: “Certo. Pode me contar um pouco mais sobre como foi esse processo? Disseram algum motivo específico?”\n  - Quando pedido de demissão: “Entendi. Mesmo em casos de pedido de demissão, precisamos avaliar se não houve pressão ou coação da empresa. Pode me contar um pouco mais sobre o que aconteceu?”\n\n### Como proceder a conversa\n\n- Vá coletando as informações naturalmente durante a conversa (1 pergunta por mensagem).\n\n- Repita sempre o que já sabe e o que ainda precisa confirmar.\n\n- Quando todos os dados estiverem preenchidos e confirmados pelo usuário, use a tool Cadastrar usuário no Postgres e encerre:\n> \"Muito obrigado por compartilhar todas essas informações. Já temos base para agendarmos uma reunião individualizada, onde revisaremos seus documentos e traçaremos a melhor estratégia para garantir seus direitos. Qual o melhor dia e horário para nossa conversa?\".\n\n### Saudação\n\n> “Olá, tudo bem? Seja bem-vindo(a) a TRSADV. Antes de iniciarmos, quero te explicar: este atendimento é 100% sigiloso e protegido. Nosso objetivo é entender sua situação com calma e, se for o caso, buscar a melhor solução jurídica para garantir seus direitos. Me fale um pouco do que precisa?”\n\n### Regras Gerais\n\n- Mostre empatia e interesse genuíno pelo usuário.\n\n- Priorize a compreensão da situação antes de pedir dados.\n\n- Não formalize perguntas de cadastro; infira da conversa.\n\n\n- Só finalize o cadastro após confirmação explícita do usuário."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        1696
+      ],
+      "id": "8a7e75e2-6d4a-423a-ae6b-89948b4b71fc",
+      "name": "AI Teste"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v23.0/795832766937843/messages ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"5511988488227\",\n  \"type\": \"interactive\",\n  \"interactive\": {\n    \"type\": \"flow\",\n    \"header\": {\n      \"type\": \"text\",\n      \"text\": \"Cadastro\"\n    },\n    \"body\": {\n      \"text\": \"Clique abaixo para preencher seu formulário inicial:\"\n    },\n    \"footer\": {\n      \"text\": \"TRS Advocacia\"\n    },\n    \"action\": {\n      \"name\": \"flow\",\n      \"parameters\": {\n        \"flow_id\": \"1751709125450873\",\n        \"flow_cta\": \"Iniciar cadastro\",\n        \"mode\": \"published\",\n        \"flow_message_version\": \"3\"\n      }\n    }\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        1136
+      ],
+      "id": "b0d3ba7c-5283-40e2-bdf9-21b74f6391c2",
+      "name": "Enviar mensagem formulário",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "KPeOqexrj3tg1UY7",
+          "name": "Bearer Auth WA TRS"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://srv881894.hstgr.cloud/api/v1/accounts/3/contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "=Gui"
+            },
+            {
+              "name": "phone_number",
+              "value": "=+551988488227"
+            },
+            {
+              "name": "identifier",
+              "value": "=identifier"
+            },
+            {
+              "name": "email",
+              "value": "=email@email.com.br"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        1712
+      ],
+      "id": "6b9ac78f-538b-497b-a22d-c299473092a9",
+      "name": "Salvar Contato Chatwoot",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// O n8n sempre fornece os dados de entrada em items[0].json\n// No caso, recebemos algo como:\n// [\n//   {\n//     \"output\": \"Oi Guilherme! Tudo bem?  \\nPara começar, preciso do seu e-mail para mantermos o contato.  \\nE me conta, qual é a situação jurídica que você está enfrentando? Assim consigo entender melhor e indicar a área certa.\"\n//   }\n// ]\n\n// Primeiro, acessamos o \"output\"\nconst texto = items[0].json.output;\n\n// Quebramos o texto por quebras de linha \"\\n\"\nconst partes = texto.split(\"\\n\");\n\n// Agora vamos retornar cada parte como um item separado no n8n\nreturn partes\n  // Limpamos espaços extras\n  .map(p => p.trim())\n  // Removemos linhas vazias\n  .filter(p => p.length > 0)\n  // Transformamos em um array de objetos\n  .map(p => {\n    return { json: { output: p } };\n  });\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4336,
+        192
+      ],
+      "id": "67c9bb9a-8516-4269-8f7e-72b586588556",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4544,
+        192
+      ],
+      "id": "fcc5990f-6d2b-49ec-a709-c4bfd3cf93e1",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "https://srv881894.hstgr.cloud/api/v1/accounts/3/contacts/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json['numero do lead'] }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        1008
+      ],
+      "id": "7de222e9-6637-4187-af2b-a914fbe5dde6",
+      "name": "Procurar Contato Chatwoot"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://srv881894.hstgr.cloud/api/v1/accounts/3/contacts/{{ $('Procurar Contato Chatwoot').item.json.payload[0].id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"additional_attributes\": \n    {\n      \"description\": \"{{ $json.output.additional_attributes.description }}\"\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"{{ $json.output.custom_attributes.profissao }}\",\n    \"area_do_direito\": \"{{ $json.output.custom_attributes.area_do_direito }}\",\n      \"tipo_de_acao\": \"{{ $json.output.custom_attributes.tipo_de_acao }}\",\n    \"valor_causa\": \"{{ $json.output.custom_attributes.valor_causa }}\",\n    \"numero_do_processo\": \"{{ $json.output.custom_attributes.numero_do_processo }}\",\n    \"resumo_do_caso\": \"{{ $json.output.custom_attributes.resumo_do_caso }}\",\n    \"status_financeiro\": \"{{ $json.output.custom_attributes.status_financeiro }}\",\n    \"forma_de_pagamento\": \"{{ $json.output.custom_attributes.forma_de_pagamento }}\",\n    \"data_ultimo_pagamento\": \"{{ $json.output.custom_attributes.data_ultimo_pagamento }}\",\n    \"valor_pago\": \"{{ $json.output.custom_attributes.valor_pago }}\",\n    \"origem_do_lead\": \"{{ $json.output.custom_attributes.origem_do_lead }}\",\n    \"responsavel_interno\": \"{{ $json.output.custom_attributes.responsavel_interno }}\",\n    \"prioridade\": \"{{ $json.output.custom_attributes.prioridade }}\",\n    \"categoria_de_cliente\": \"{{ $json.output.custom_attributes.categoria_de_cliente }}\",\n    \"nome_cliente\": \"{{ $json.output.custom_attributes.nome_cliente }}\",\n    \"cnpj\": \"{{ $json.output.custom_attributes.cnpj }}\", \n    \"telefone_cliente\": \"{{ $json.output.custom_attributes.telefone_cliente }}\",\n    \"email_cliente\": \"{{ $json.output.custom_attributes.email_cliente }}\",\n    \"numero_do_processo_cnj\": \"{{ $json.output.custom_attributes.numero_do_processo_cnj }}\",\n    \"nacionalidade\": \"{{ $json.output.custom_attributes.nacionalidade }}\",\n    \"estado_civil\": \"{{ $json.output.custom_attributes.estado_civil }}\",\n    \"profissão\": \"{{ $json.output.custom_attributes['profissão'] }}\",\n    \"rg\": \"{{ $json.output.custom_attributes.rg }}\",\n    \"endereco_completo_do_cliente\":\"{{ $json.output.custom_attributes.endereco_completo_do_cliente }}\"  \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1024,
+        1008
+      ],
+      "id": "8d37cb67-965f-4b92-80c3-8caba644b496",
+      "name": "Alterar observação do contato no Chatwoot"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.tivas.com.br/api/v1/accounts/2/conversations/{{ $('Webhook').item.json.body.conversation.messages[0].conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $('Loop Over Items').item.json.output }}"
+            },
+            {
+              "name": "message_type",
+              "value": "outgoing"
+            },
+            {
+              "name": "private",
+              "value": "false"
+            },
+            {
+              "name": "content_type",
+              "value": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4832,
+        288
+      ],
+      "id": "76c0b2fa-fe50-49b3-9e84-a2db979ffad2",
+      "name": "Enviar WABA pelo Chatwoot"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-trs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1840,
+        16
+      ],
+      "id": "4fcfc947-cb88-45ce-bb42-ff0159013b57",
+      "name": "Webhook",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3360,
+        400
+      ],
+      "id": "6ff12962-3aca-46f3-b04a-3e1080638ee7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "aTBqlSzzWFr4mE0A",
+          "name": "TRS OpenAi account"
+        }
+      },
+      "notes": "[OPENAI_API_KEY_REMOVED]"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Base vetorizada com informações jurídicas",
+        "tableName": {
+          "__rl": true,
+          "value": "rag_faq",
+          "mode": "list",
+          "cachedResultName": "rag_faq"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        4064,
+        416
+      ],
+      "id": "887be681-f7e2-4d6a-b772-0753e23f245d",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "4CIqqHtvObK2RFhl",
+          "name": "TRS Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        4064,
+        560
+      ],
+      "id": "775c582f-99f4-4d68-9a55-8a30ff2e1cf7",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "gLeG8ecfI823nEG4",
+          "name": "My Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.conversation.messages[0].attachments[0].data_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        112
+      ],
+      "id": "7752232c-5633-42cc-bbcc-5ddd4e48b769",
+      "name": "Baixar áudio"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "O que tem na imagem?",
+        "imageUrls": "={{ $json.body.conversation.messages[0].attachments[0].data_url }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -160,
+        304
+      ],
+      "id": "599120e2-fd3c-4e23-97d4-cf8b5b61c055",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "aTBqlSzzWFr4mE0A",
+          "name": "TRS OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.conversation.messages[0].attachments[0].data_url }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        544
+      ],
+      "id": "5bc0452e-ccab-4bcc-b5e7-27f87655c524",
+      "name": "Baixar File"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Messagem').item.json.msg.telefone }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        192
+      ],
+      "id": "7dc29f59-82bb-4bec-be63-4710ceff82bd",
+      "name": "Deletar",
+      "credentials": {
+        "redis": {
+          "id": "iWCKW52GSu7cIKk0",
+          "name": "Local Redis account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2160,
+        352
+      ],
+      "id": "c3e9a541-3790-45f4-a2b0-5cd2a01fdfb3",
+      "name": "Wait",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        -208
+      ],
+      "id": "6b21c7b2-5cbb-41db-80ea-133d51e1c9e6",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "535555ee-0e96-4e61-88eb-e07c8558fda4",
+              "name": "text",
+              "value": "={{ $json.text.join('\\n') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2272,
+        192
+      ],
+      "id": "a579ab1c-f47f-41d6-b92d-42d344765d0f",
+      "name": "Concatenação"
+    },
+    {
+      "parameters": {
+        "content": "## Buffer de mensagem (10 seg)",
+        "height": 800,
+        "width": 1328
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "1768b897-c94b-449b-b98b-69f9c57c8b6a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Tratamento de mensagens por tipo",
+        "height": 800,
+        "width": 1872,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1840,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "6f077c06-fedb-44d8-92a1-6b6c3be8e9a6",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.msg.telefone }}",
+        "messageData": "={{ JSON.stringify($json.msg) }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        192
+      ],
+      "id": "15474db1-1867-4345-a010-cd5ec152fecb",
+      "name": "Enviar msg pra lista",
+      "credentials": {
+        "redis": {
+          "id": "iWCKW52GSu7cIKk0",
+          "name": "Local Redis account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "List_array",
+        "key": "={{ $('Messagem').item.json.msg.telefone }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        192
+      ],
+      "id": "0636f621-93aa-4117-a03c-cba7ecdab5a9",
+      "name": "Buscar lista atualizada",
+      "credentials": {
+        "redis": {
+          "id": "iWCKW52GSu7cIKk0",
+          "name": "Local Redis account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Input a armazenar"
+            },
+            {
+              "name": "numero do lead"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        1008
+      ],
+      "id": "457d9eef-161a-462d-9587-1807a498d020",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=O que tinha: {{ JSON.stringify($json.payload[0].custom_attributes) }},{{ JSON.stringify($json.payload[0].additional_attributes) }}\n\nE o que chegou de novo para Colocar:  {{ $('When Executed by Another Workflow').item.json['Input a armazenar'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é uma IA especialista em organizar a memória sobre o lead, eu vou dar o que tinha e o que agora tem de novo e no seu output deve retornar organizado por json e só o que você organizou, nada além disso! deixe resumido porem sem tirar coisas essenciais, cada melhoria que você faz deixa a memória mais organizada.\nPreencha todos os campos, e o que não tiver informação, deixe null.\n\nSiga o seguinte formato para responder:\n{\n  \"additional_attributes\": \n    {\n      \"description\": Resumo geral\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"\",\n    \"area_do_direito\": \"[Tributario, Trânsito, Trabalhista, Registro de Marcas, Previdenciário, Médico, Imobiliário, Franquia, Familia, Educacional, Criminal, Contratos, Consumidor, Civel]\",\n      \"tipo_de_acao\": \"[Reintegração PCD, Indenização Por Dano Moral, Golpe PIX, Superendividamento, Isenção do ITBI, Outro]\",\n    \"valor_causa\": Valor em reais,\n    \"numero_do_processo\": ,\n    \"resumo_do_caso\": Resumo do caso,\n    \"status_financeiro\": \"[Pago, Pendente, Inadimplente, Parcelado]\",\n    \"forma_de_pagamento\": \"[PIX, Boleto, Cartão, Transferência, Dinheiro]\",\n    \"data_ultimo_pagamento\": DD/MM/YYYY,\n    \"valor_pago\": Valor em reais,\n    \"origem_do_lead\": \"[WhatsApp, Instagram, Site, Indicação, Google, Tráfego, Outro]\",\n    \"responsavel_interno\": Nome do advogado responsável,\n    \"prioridade\": \"[Alta, Média, Baixa]\",\n    \"categoria_de_cliente\": \"[Novo, Ativo, Recorrente, VIP]\",\n    \"nome_cliente\": Nome,\n    \"cnpj\": 14 numeros, \n    \"telefone_cliente\":11 numeros,\n    \"email_cliente\": email com @,\n    \"numero_do_processo_cnj\": \"\",\n    \"nacionalidade\": \"\",\n    \"estado_civil\": \"[Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União Estável]\",\n    \"profissão\": \"\",\n    \"rg\": 9 caracteres,\n    \"endereco_completo_do_cliente\":\"\"\n  }\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        1008
+      ],
+      "id": "f480c2ae-ebb6-4672-8060-72eacaf25024",
+      "name": "AI Memorizadora"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3119cea0-3e05-4256-bc67-1dbfd94a9c6c",
+              "name": "Resumo",
+              "value": "={{ $('AI Memorizadora').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        1008
+      ],
+      "id": "fc370e15-a469-4974-b3e6-535735c78427",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        1200
+      ],
+      "id": "3c803728-c3ce-42b2-ad4f-369c2157c93a",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "aTBqlSzzWFr4mE0A",
+          "name": "TRS OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://chat.tivas.com.br/api/v1/accounts/2/contacts/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.phone_number }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2672,
+        192
+      ],
+      "id": "f47ddc3a-b364-4409-98de-9ec8c71444e4",
+      "name": "Procurar Contato Chatwoot1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://srv881894.hstgr.cloud/api/v1/accounts/3/contacts/1168",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"additional_attributes\": \n      {\n        \"description\": \"{{ $json.output }}\"\n      }\n  \"custom_attributes\": {\n    \"profissao\": \"dev3\",\n    \"area_do_direito\": \"\",\n    \"tipo_de_acao\": \"\",\n    \"valor_causa\": \"\",\n    \"numero_do_processo\": \"\",\n    \"status_processual\": \"\",\n    \"resumo_do_caso\": \"\",\n    \"prazo_processual\": \"\",\n    \"status_financeiro\": \"\",\n    \"forma_de_pagamento\": \"\",\n    \"data_ultimo_pagamento\": \"\",\n    \"valor_pago\": \"\",\n    \"origem_do_lead\": \"\",\n    \"responsavel_interno\": \"\",\n    \"prioridade\": \"\",\n    \"categoria_de_cliente\": \"\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        1776
+      ],
+      "id": "29b22478-8084-4ce9-b28a-12bcc8ca8915",
+      "name": "Alterar observação do contato no Chatwoot2"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Atualiza automaticamente o cadastro do contato no Chatwoot, preenchendo os\ncampos personalizados (custom_attributes) com dados coletados pela IA.\nInclui profissão, área do direito, tipo de ação, valor da causa, número do\nprocesso, resumo, status financeiro, forma de pagamento, último pagamento,\nvalor pago, origem do lead, responsável interno, prioridade e categoria do\ncliente.",
+        "method": "PATCH",
+        "url": "https://srv881894.hstgr.cloud/api/v1/accounts/3/contacts/{{ $('Procurar Contato Chatwoot1').item.json.payload[0].id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"additional_attributes\": \n    {\n      \"description\": \"{{ $json.output }}\"\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"{{ $fromAI('profissão', ``, 'json') }}\",\n    \"area_do_direito\": \"{{ $fromAI('profissão', `Tributario, Trânsito, Trabalhista, Registro de Marcas, Previdenciário, Médico, Imobiliário, Franquia, Familia, Educacional, Criminal, Contratos, Consumidor, Civel`, 'json') }}\",\n      \"tipo_de_acao\": \"{{ $fromAI('tipo_de_acao',`Tipo de ação específico (ex: Reintegração PCD, Indenização Por Dano Moral, Golpe PIX, Superendividamento, Isenção do ITBI etc.)`, 'json') }}\",\n    \"valor_causa\": \"{{ $fromAI('valor_causa', `Valor da causa em reais`, 'json') }}\",\n    \"numero_do_processo\": \"{{ $fromAI('numero_do_processo', `Número do processo judicial, quando houver`, 'json') }}\",\n    \"resumo_do_caso\": \"{{ $fromAI('resumo_do_caso', `Observações iniciais e resumo do caso`, 'json') }}\",\n    \"status_financeiro\": \"{{ $fromAI('status_financeiro', `Situação financeira do cliente (Pago, Pendente, Inadimplente, Parcelado)`, 'json') }}\",\n    \"forma_de_pagamento\": \"{{ $fromAI('forma_de_pagamento', `Método de pagamento (PIX, Boleto, Cartão, Transferência, Dinheiro)`, 'json') }}\",\n    \"data_ultimo_pagamento\": \"{{ $fromAI('data_ultimo_pagamento', `Data do último pagamento de honorários`, 'json') }}\",\n    \"valor_pago\": \"{{ $fromAI('valor_pago', ``, 'json') }}\",\n    \"origem_do_lead\": \"{{ $fromAI('origem_do_lead', `Origem do contato (WhatsApp, Instagram, Site, Indicação, Google, Tráfego, Outro)`, 'json') }}\",\n    \"responsavel_interno\": \"{{ $fromAI('responsavel_interno', `Advogado/colaborador responsável pelo caso`, 'json') }}\",\n    \"prioridade\": \"{{ $fromAI('prioridade', `Grau de prioridade (Alta, Média, Baixa)`, 'json') }}\",\n    \"categoria_de_cliente\": \"{{ $fromAI('categoria_de_cliente', `Classificação (Novo, Ativo, Recorrente, VIP)`, 'json') }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -880,
+        1904
+      ],
+      "id": "e081f7a7-8d66-44fe-8c91-b08c74a2e88c",
+      "name": "Cadastro Chatwoot"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"additional_attributes\": \n    {\n      \"description\": \"O usuário se chama Amado Batista, tem 47 anos, de São Paulo, precisa de ajuda com...\"\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"Engenheiro\",\n    \"area_do_direito\": \"[Tributario, Trânsito, Trabalhista, Registro de Marcas, Previdenciário, Médico, Imobiliário, Franquia, Familia, Educacional, Criminal, Contratos, Consumidor, Civel]\",\n      \"tipo_de_acao\": \"[Reintegração PCD, Indenização Por Dano Moral, Golpe PIX, Superendividamento, Isenção do ITBI, Outro]\",\n    \"valor_causa\": \"5000\",\n    \"numero_do_processo\": \"5491\",\n    \"resumo_do_caso\": \"No dia x, João foi humilhado em publico por...\",\n    \"status_financeiro\": \"[Pago, Pendente, Inadimplente, Parcelado]\",\n    \"forma_de_pagamento\": \"[PIX, Boleto, Cartão, Transferência, Dinheiro]\",\n    \"data_ultimo_pagamento\": \"15/09/2025\",\n    \"valor_pago\": \"2000\",\n    \"origem_do_lead\": \"[WhatsApp, Instagram, Site, Indicação, Google, Tráfego, Outro]\",\n    \"responsavel_interno\": \"Tiago Ribeiro Soares\",\n    \"prioridade\": \"[Alta, Média, Baixa]\",\n    \"categoria_de_cliente\": \"[Novo, Ativo, Recorrente, VIP]\",\n    \"nome_cliente\": \"Amado Batista\",\n    \"cnpj\": \"12345678901234\", \n    \"telefone_cliente\": 11988884444,\n    \"email_cliente\": \"email@gmail.com\",\n    \"numero_do_processo_cnj\": \"\",\n    \"nacionalidade\": \"Brasileiro\",\n    \"estado_civil\": \"[Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União Estável]\",\n    \"profissão\": \"Engenheiro\",\n    \"rg\": \"447447447X\",\n    \"endereco_completo_do_cliente\":\"Avenida Lider, 210, São Paulo, SP\"  \n}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        1200
+      ],
+      "id": "a6aca654-3cc7-40df-b721-961a022a5c63",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "description": "Chame essa tool para salvar informações sobre a pessoa com quem esta conversando.",
+        "workflowId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "WA Bot"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Input a armazenar": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Input_a_armazenar', ``, 'string') }}",
+            "numero do lead": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('numero_do_lead', `Telefone`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Input a armazenar",
+              "displayName": "Input a armazenar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "numero do lead",
+              "displayName": "numero do lead",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3952,
+        416
+      ],
+      "id": "7188ff63-6a0c-4520-a577-31fa864c336b",
+      "name": "Memory Long"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://chat.tivas.com.br/api/v1/accounts/2/contacts/{{ $('Webhook').item.json.body.conversation.contact_inbox.contact_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"additional_attributes\": \n    {\n      \"description\": \"{{ $json.output.additional_attributes.description }}\"\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"{{ $json.output.custom_attributes.profissao }}\",\n    \"area_do_direito\": \"{{ $json.output.custom_attributes.area_do_direito }}\",\n    \"tipo_de_acao\": \"{{ $json.output.custom_attributes.tipo_de_acao }}\",\n    \"valor_causa\": \"{{ $json.output.custom_attributes.valor_causa }}\",\n    \"numero_do_processo\": \"{{ $json.output.custom_attributes.numero_do_processo }}\",\n    \"resumo_do_caso\": \"{{ $json.output.custom_attributes.resumo_do_caso }}\",\n    \"status_financeiro\": \"{{ $json.output.custom_attributes.status_financeiro }}\",\n    \"forma_de_pagamento\": \"{{ $json.output.custom_attributes.forma_de_pagamento }}\",\n    \"data_ultimo_pagamento\": \"{{ $json.output.custom_attributes.data_ultimo_pagamento }}\",\n    \"valor_pago\": \"{{ $json.output.custom_attributes.valor_pago }}\",\n    \"origem_do_lead\": \"{{ $json.output.custom_attributes.origem_do_lead }}\",\n    \"responsavel_interno\": \"{{ $json.output.custom_attributes.responsavel_interno }}\",\n    \"prioridade\": \"{{ $json.output.custom_attributes.prioridade }}\",\n    \"categoria_de_cliente\": \"{{ $json.output.custom_attributes.categoria_de_cliente }}\",\n    \"nome_cliente\": \"{{ $json.output.custom_attributes.nome_cliente }}\",\n    \"cnpj\": \"{{ $json.output.custom_attributes.cnpj }}\", \n    \"telefone_cliente\": \"{{ $json.output.custom_attributes.telefone_cliente }}\",\n    \"email_cliente\": \"{{ $json.output.custom_attributes.email_cliente }}\",\n    \"numero_do_processo_cnj\": \"{{ $json.output.custom_attributes.numero_do_processo_cnj }}\",\n    \"nacionalidade\": \"{{ $json.output.custom_attributes.nacionalidade }}\",\n    \"estado_civil\": \"{{ $json.output.custom_attributes.estado_civil }}\",\n    \"profissão\": \"{{ $json.output.custom_attributes['profissão'] }}\",\n    \"rg\": \"{{ $json.output.custom_attributes.rg }}\",\n    \"endereco_completo_do_cliente\":\"{{ $json.output.custom_attributes.endereco_completo_do_cliente }}\"  \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3792,
+        -304
+      ],
+      "id": "f71a660c-1e57-4a2f-9fdf-d8a952b86b4f",
+      "name": "Alterar observação do contato no Chatwoot3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=O que tinha: {{ $json.total_attributes }}\n\nE o que chegou de novo: \"\"{{ $json.text }}\"\"",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é uma IA especialista em organizar a memória sobre o lead, eu vou dar o que tinha e o que agora tem de novo e no seu output deve retornar organizado por json e só o que você organizou, nada além disso! deixe resumido porem sem tirar coisas essenciais, cada melhoria que você faz deixa a memória mais organizada.\nSEMPRE preencha todos os campos, e o que não tiver informação, deixe null.\n\nSiga o seguinte formato para responder:\n{\n  \"additional_attributes\": \n    {\n      \"description\": Resumo geral\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"\",\n    \"area_do_direito\": \"[Tributario, Trânsito, Trabalhista, Registro de Marcas, Previdenciário, Médico, Imobiliário, Franquia, Familia, Educacional, Criminal, Contratos, Consumidor, Civel]\",\n      \"tipo_de_acao\": \"[Reintegração PCD, Indenização Por Dano Moral, Golpe PIX, Superendividamento, Isenção do ITBI, Outro]\",\n    \"valor_causa\": Valor em reais,\n    \"numero_do_processo\": ,\n    \"resumo_do_caso\": Resumo do caso,\n    \"status_financeiro\": \"[Pago, Pendente, Inadimplente, Parcelado]\",\n    \"forma_de_pagamento\": \"[PIX, Boleto, Cartão, Transferência, Dinheiro]\",\n    \"data_ultimo_pagamento\": DD/MM/YYYY,\n    \"valor_pago\": Valor em reais,\n    \"origem_do_lead\": \"[WhatsApp, Instagram, Site, Indicação, Google, Tráfego, Outro]\",\n    \"responsavel_interno\": Nome do advogado responsável,\n    \"prioridade\": \"[Alta, Média, Baixa]\",\n    \"categoria_de_cliente\": \"[Novo, Ativo, Recorrente, VIP]\",\n    \"nome_cliente\": Nome,\n    \"cnpj\": 14 numeros, \n    \"telefone_cliente\":11 numeros,\n    \"email_cliente\": email com @,\n    \"numero_do_processo_cnj\": \"\",\n    \"nacionalidade\": \"\",\n    \"estado_civil\": \"[Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União Estável]\",\n    \"profissão\": \"\",\n    \"rg\": 9 caracteres,\n    \"endereco_completo_do_cliente\":\"\"\n  }\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3456,
+        -304
+      ],
+      "id": "f12a39a2-464e-4697-b9db-156328aacbfb",
+      "name": "AI Memorizadora1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3119cea0-3e05-4256-bc67-1dbfd94a9c6c",
+              "name": "Resumo",
+              "value": "={{ $('AI Memorizadora1').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3984,
+        -304
+      ],
+      "id": "e8bf9b3f-f4cc-418a-a4f6-084767a0ae8b",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3360,
+        -32
+      ],
+      "id": "34c7aa2e-22d0-43c2-b28b-84591c6e84d0",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "aTBqlSzzWFr4mE0A",
+          "name": "TRS OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"additional_attributes\": \n    {\n      \"description\": \"O usuário se chama Amado Batista, tem 47 anos, de São Paulo, precisa de ajuda com...\"\n    },\n  \"custom_attributes\": {\n    \"profissao\": \"Engenheiro\",\n    \"area_do_direito\": \"[Tributario, Trânsito, Trabalhista, Registro de Marcas, Previdenciário, Médico, Imobiliário, Franquia, Familia, Educacional, Criminal, Contratos, Consumidor, Civel]\",\n    \"tipo_de_acao\": \"[Reintegração PCD, Indenização Por Dano Moral, Golpe PIX, Superendividamento, Isenção do ITBI, Outro]\",\n    \"valor_causa\": \"5000\",\n    \"numero_do_processo\": \"5491\",\n    \"resumo_do_caso\": \"No dia x, João foi humilhado em publico por...\",\n    \"status_financeiro\": \"[Pago, Pendente, Inadimplente, Parcelado]\",\n    \"forma_de_pagamento\": \"[PIX, Boleto, Cartão, Transferência, Dinheiro]\",\n    \"data_ultimo_pagamento\": \"15/09/2025\",\n    \"valor_pago\": \"2000\",\n    \"origem_do_lead\": \"[WhatsApp, Instagram, Site, Indicação, Google, Tráfego, Outro]\",\n    \"responsavel_interno\": \"Tiago Ribeiro Soares\",\n    \"prioridade\": \"[Alta, Média, Baixa]\",\n    \"categoria_de_cliente\": \"[Novo, Ativo, Recorrente, VIP]\",\n    \"nome_cliente\": \"Amado Batista\",\n    \"cnpj\": \"12345678901234\", \n    \"telefone_cliente\": 11988884444,\n    \"email_cliente\": \"email@gmail.com\",\n    \"numero_do_processo_cnj\": \"\",\n    \"nacionalidade\": \"Brasileiro\",\n    \"estado_civil\": \"[Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União Estável]\",\n    \"profissão\": \"Engenheiro\",\n    \"rg\": \"447447447X\",\n    \"endereco_completo_do_cliente\":\"Avenida Lider, 210, São Paulo, SP\"  \n}}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3632,
+        -96
+      ],
+      "id": "47635932-856a-4389-8516-517e0315a2a9",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.List_array.first()).id}}",
+                    "rightValue": "={{ $('Messagem').item.json.msg.id }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "55bdde47-5d5a-4c33-ad22-9e6e083972d7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nada a fazer"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "82cddeae-ffba-4426-a2c6-8465d64f0f1d",
+                    "leftValue": "={{ JSON.parse($json.List_array.last()).time}}",
+                    "rightValue": "={{$now.minus(10,'seconds')}}",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "before"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Prosseguir"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Esperar"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1808,
+        176
+      ],
+      "id": "22a7101d-f08f-4f57-949c-986a56cf04c2",
+      "name": "Switch",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "tag",
+              "value": "msg_enviada"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        4832,
+        96
+      ],
+      "id": "f2ed7b6c-0b9b-48e5-87b8-df534a371edc",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd6d6692-23e6-4657-8e90-f8663c193558",
+              "name": "custom_attributes",
+              "value": "={{ JSON.stringify($json.payload[0].custom_attributes) }}",
+              "type": "string"
+            },
+            {
+              "id": "f1d61ae0-2343-422c-a5ee-76954a9528ae",
+              "name": "additional_attributes",
+              "value": "={{ JSON.stringify($json.payload[0].additional_attributes) }}",
+              "type": "string"
+            },
+            {
+              "id": "1d3e6723-6f41-4a77-be67-4420bc7ea817",
+              "name": "text",
+              "value": "={{ $('Concatenação').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "07baf6b7-aeef-46e5-8f9b-304210e9e22d",
+              "name": "total_attributes",
+              "value": "={{ $json.payload[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2880,
+        192
+      ],
+      "id": "c6b5065a-c400-4241-bd1d-8ae950a2bb07",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "daad1f39-97a7-41bf-899d-fbe5b96936b0",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "conversation_updated",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1456,
+        0
+      ],
+      "id": "b2a3fe9b-b158-4962-99f6-343a925ee371",
+      "name": "Se não for um status do chatwoot"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "pt"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        64,
+        112
+      ],
+      "id": "be46c87c-3582-4fd4-94b2-b84a542dc473",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "aTBqlSzzWFr4mE0A",
+          "name": "TRS OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "tag",
+              "value": "status_chatwoot"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        -1456,
+        272
+      ],
+      "id": "bb03f2c2-f111-4e09-9f57-3d20a8535219",
+      "name": "Execution Data1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "61c7115c-2f64-408e-a608-96570eebf2ff",
+              "leftValue": "={{ $('Procurar Contato Chatwoot1').item.json.body.conversation.meta.assignee.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3072,
+        208
+      ],
+      "id": "e8b92f92-7453-4482-a7ad-d4a0e327544a",
+      "name": "Mensagem é pra IA?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0c7a79ac-ac5f-4342-b0c2-ec195d156b44",
+              "leftValue": "={{ $json.body.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1168,
+        0
+      ],
+      "id": "b2d10e8c-8532-4404-a235-63e2d366cdcd",
+      "name": "Mensagem do usuário?"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "tag",
+              "value": "msg_for_agent"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        3232,
+        464
+      ],
+      "id": "a21ebe05-959a-43be-ab67-362fefcbef78",
+      "name": "Execution Data2"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "tag",
+              "value": "msg_ia"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        -848,
+        192
+      ],
+      "id": "b2f8b739-8e29-497c-9daf-ea5e1ed53a3e",
+      "name": "Execution Data3"
+    },
+    {
+      "parameters": {
+        "content": "## Memorização e registro",
+        "height": 480,
+        "width": 1200,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2672,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "aead4f5f-7ed1-4ef9-b182-4c03a6c36930",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Agente Principal",
+        "height": 608,
+        "width": 1216,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2672,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "a9f27a25-4ca4-4124-8c44-0f5a8c555f7f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5072,
+        288
+      ],
+      "id": "176ab604-d87d-4997-845f-893ea537efdf",
+      "name": "Wait1",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.conversation.messages[0].sender.phone_number }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2928,
+        592
+      ],
+      "id": "5786e37c-6431-42ff-83fe-c6c9da2d91df",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c22158c7-5df6-4a3b-a0bb-f2224332aebf",
+              "leftValue": "={{ $json.body.conversation.priority }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1664,
+        16
+      ],
+      "id": "b388dbbb-38d5-4b85-b3fd-908dfaa5ea89",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "45ec5f5e-d99f-4983-86bc-67a57ec8726b",
+              "leftValue": "={{ $('Webhook').item.json.body.sender.id }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1168,
+        288
+      ],
+      "id": "cc72e31c-58a7-4c3d-8da7-66299522cb29",
+      "name": "If is the agent"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://chat.tivas.com.br/api/v1/accounts/2/conversations/{{ $('Webhook').item.json.body.conversation.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "priority",
+              "value": "low"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -848,
+        448
+      ],
+      "id": "a31eb5ca-00c8-4896-9a44-bf05183d4341",
+      "name": "Handover"
+    },
+    {
+      "parameters": {
+        "url": "https://chat.tivas.com.br/api/v1/accounts/2/contacts/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "=+5511988488227"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        400
+      ],
+      "id": "0f9758a5-81d6-48ea-953d-2f24325a99cc",
+      "name": "Procurar Contato Chatwoot2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Conversa está com esta(s) tag(s): {{ $('Webhook').item.json.body.conversation.labels }}\n\nQual foi a mensagem nova do lead: \"\"{{ $json.text }}\"\"",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é uma IA especialista em organizar as labels das conversas com leads, eu vou dar o que tinha de tag e o que agora tem de mensagem nova e no seu output deve retornar organizado por json e só o que você definiu como tag nova e que vai permanecer, nada além disso! \n\n\nSiga o seguinte formato para responder:\n{\n  \"labels\": [\n    \"tag1\",\n    \"tag2\",\n    ...\n  ]\n}\n\nTags disponíveis e descrições separado por áreas:\n\n# ---------------------- CÍVEL (#4D79FF) ----------------------\ncível: área\nciv-cobranca: Ações de cobrança de dívidas contratuais\nciv-danomaterial: Indenização por dano material\nciv-danomoral: Indenização por dano moral\nciv-execucaotitulo: Execução de título extrajudicial\nciv-mandadoseguranca: Mandados de segurança em matéria cível\nciv-monitoria: Ações monitórias para reconhecimento de dívida\nciv-notificacaoextrajudicial: Notificações e interpelações extrajudiciais\nciv-obrigacaofazer: Ações de obrigação de fazer ou não fazer\n\n# ---------------------- CONSUMIDOR (#33CC66) ----------------------\nconsumidor: área\ncons-digitalimagem: Uso indevido de imagem em redes sociais/plataformas digitais\ncons-distratoimobiliario: Distratos de contrato de compra e venda de imóveis\ncons-educacional: Problemas com contratos de instituições de ensino\ncons-golpepix: Ações envolvendo fraudes bancárias e golpes do PIX\ncons-negativacaoindevida: Casos de negativação indevida em órgãos de crédito\ncons-planosaude: Negativas de cobertura e reajustes abusivos em planos de saúde\ncons-produtodefeito: Ações de vício ou defeito em produtos\ncons-viagemaerea: Cancelamento ou atraso de voo, extravio de bagagem\n\n# ---------------------- CONTRATOS (#3399FF) ----------------------\ncontratos: área\ncontrato-elaboracao: Elaboração de contratos personalizados\ncontrato-revisao: Revisão de cláusulas contratuais\n\n# ---------------------- CRIMINAL (#333333) ----------------------\ncriminal: área\ncrim-crimespatrimoniais: Defesas em furto, roubo e apropriação indébita\ncrim-defesatráfico: Defesas criminais em tráfico de drogas\ncrim-habeascorpus: Habeas Corpus para liberdade do cliente\ncrim-revogacaoprisao: Revogação de prisão preventiva ou temporária\n\n# ---------------------- DOCUMENTOS & CLIENTES (#999999) ----------------------\nacordo-proposto: Há proposta de acordo em andamento\nanexo_recebido: Recebimento de Documentos\naudiencia-marcada: Audiência já agendada\ncliente-ativo: Cliente já em acompanhamento processual\ncliente-inadimplente: Cliente com pendências financeiras\ncliente-novo: Cliente Novo\ncliente-pagamentoêxito: Pagamento exclusivamente no Êxito\ndoc-pendente: Cliente não enviou todos os documentos\ndoc-recebido: Cliente enviou documentação solicitada\nencerramento: Caso encerrado e baixado no sistema\nhonorarios-exito-pendentes: Honorários de Êxito Pendentes\nhonorarios-iniciais-pagos: Honorários Iniciais Pagos\nhonorarios-iniciais-pendentes: Honorários Iniciais Pendentes\nhonorarios-mensais-pagos: Honorários Mensais Pagos\nhonorarios-mensais-pendentes: Honorários Mensais Pendentes\nlead-qualificado: Contato validado com interesse real\nmensagem-aniversario: Mensagem de Aniversário\nmensagem-institucional-final-de-ano: Mensagem Institucional Final de Ano\nparcelamento-ativo: Pagamento parcelado ativo\nprazo-urgente: Situações com prazo curto processual\npeticao-protocolada: Petição já protocolada\nreuniao-confirmada: Reunião Confirmada\n\n# ---------------------- EDUCACIONAL (#00CCCC) ----------------------\neducacional: área\nedu-descontosbolsas: Discussões sobre descontos, bolsas e financiamentos\nedu-diplomanaoentregue: Casos de atraso ou negativa na entrega de diplomas\nedu-inadimplenciamensalidade: Ações de cobrança ou defesa em contratos de ensino\n\n# ---------------------- FAMÍLIA (#FF66B2) ----------------------\nfamília: área\nfam-alimentos: Ações de pensão alimentícia\nfam-alteracaoregimebens: Ações de alteração do regime de bens\nfam-divorcio: Ações de divórcio consensual ou litigioso\nfam-guarda: Disputas de guarda e regulamentação de visitas\nfam-investigacaopaternidade: Ações de investigação de paternidade\n\n# ---------------------- FRANQUIA (#800033) ----------------------\nfranquia: área\nfranq-cobrancaroyalties: Ações de cobrança de royalties e taxas contratuais\nfranq-defesafranqueado: Rescisão/revisão/indenização pelo franqueado\nfranq-defesafranqueador: Defesa do franqueador em demandas judiciais\nfranq-nulidadeclausula: Nulidade/revisão de cláusulas abusivas\n\n# ---------------------- IMOBILIÁRIO (#FFCC33) ----------------------\nimobiliário: área\nimob-condominio: Discussões sobre taxas e obrigações condominiais\nimob-desapropriacao: Ações de desapropriação\nimob-distrato: Distrato em contratos de compra e venda de imóveis\nimob-imissaoposse: Ação de imissão na posse\nimob-usucapiao: Ações de usucapião\n\n# ---------------------- MARCAS (#006666) ----------------------\nmarcas: área\nmarca-anulacaoregistro: Anulação de registro de marca no INPI\nmarca-colisaonome: Casos de colisão/confusão entre marcas semelhantes\nmarca-defesajudicial: Defesa em litígios de propriedade industrial\nmarca-oposicao: Oposições a pedidos de registro de marca\n\n# ---------------------- MÉDICO (#008080) ----------------------\nmédico: área\nmed-cirurgiaestetica: Danos em procedimentos estéticos\nmed-erromedico: Responsabilidade civil por erro médico\nmed-hospitalnegligencia: Indenização por negligência hospitalar\nmed-planosaudenegativa: Negativa de cobertura em tratamentos\n\n# ---------------------- PREVIDENCIÁRIO (#9933FF) ----------------------\nprevidenciário: área\nprev-aposentadoriaidade: Aposentadoria por idade\nprev-aposentadoriatempo: Aposentadoria por tempo de contribuição\nprev-beneficioincapacidade: Benefícios por incapacidade\nprev-bpcloas: Benefício assistencial (LOAS)\nprev-pensaomorte: Pensão por morte\n\n# ---------------------- TRABALHISTA (#FF4D4D) ----------------------\ntrabalhista: área\ntrab-acidentetrabalho: Indenização por acidente laboral\ntrab-assediomoral: Assédio moral no trabalho\ntrab-assediosexual: Assédio sexual no trabalho\ntrab-dispensadiscriminatoria: Nulidade por dispensa discriminatória\ntrab-estabilidadepreaposentadoria: Estabilidade pré-aposentadoria\ntrab-horasextras: Horas extras e adicionais\ntrab-reconhecimentojustacausa: Discussão de justa causa\ntrab-reconhecimentovinculo: Reconhecimento de vínculo empregatício\ntrab-reintegracaopcd: Reintegração de PCD (Lei 8.213/91)\ntrab-rescisaoindireta: Pedido de rescisão indireta\ntrab-verbasrescisorias: Verbas rescisórias não pagas\n\n# ---------------------- TRÂNSITO (#666666) ----------------------\ntrânsito: área\ntrans-danomoraltrânsito: Danos morais em acidentes/abusos de trânsito\ntrans-indenizacaoacidente: Indenização por acidente de trânsito\ntrans-lucroscessantes: Lucros cessantes em acidentes\n\n# ---------------------- TRIBUTÁRIO (#FF9933) ----------------------\ntributário: área\ntrib-cobrancaitbi: Cobrança de ITBI\ntrib-exclusaosimples: Exclusão do Simples Nacional\ntrib-execucaofiscal: Defesa em execuções fiscais\ntrib-parcelamentotributario: Parcelamentos de débitos fiscais\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3376,
+        864
+      ],
+      "id": "585c9afd-3789-459b-87a8-ec5285f8837f",
+      "name": "AI Memorizadora2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3280,
+        1136
+      ],
+      "id": "f494a824-1a26-4017-9d12-7d0fc4a3bdd0",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "aTBqlSzzWFr4mE0A",
+          "name": "TRS OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"labels\": [\n    \"tag1\",\n    \"tag2\"\n  ]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3552,
+        1072
+      ],
+      "id": "6adf61ec-4232-4374-bad7-275f0321d914",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "content": "## Tags\n",
+        "height": 480,
+        "width": 1200,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2672,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "b6ebe986-2f29-4385-a2f7-467f7bec9e34",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://chat.tivas.com.br/api/v1/accounts/2/conversations/{{ $('Webhook').item.json.body.conversation.id }}/labels ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "[SECRET_REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.output) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3712,
+        864
+      ],
+      "id": "ee9e1862-66f8-49c9-9eb1-0c1379d3f8c4",
+      "name": "Alterar tag da conversa no Chatwoot"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "buffer_msg",
+          "cachedResultUrl": "/projects/W8sWcqcBrkOu1smK/datatables/6YvXtbDQDWjkDhB3"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ $json.msg.text }}",
+            "telefone": "={{ $json.msg.telefone }}",
+            "id_message": "={{ $json.msg.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_message",
+              "displayName": "id_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        32
+      ],
+      "id": "f1636273-a5d3-482c-94af-2b87acb8f0d3",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "buffer_msg",
+          "cachedResultUrl": "/projects/W8sWcqcBrkOu1smK/datatables/6YvXtbDQDWjkDhB3"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ $('Messagem').item.json.msg.telefone }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        32
+      ],
+      "id": "7bd9ae01-3550-45ae-9703-61692397a57c",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.id_message.first())}}",
+                    "rightValue": "={{ $('Messagem').item.json.msg.id }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "55bdde47-5d5a-4c33-ad22-9e6e083972d7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nada a fazer"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "82cddeae-ffba-4426-a2c6-8465d64f0f1d",
+                    "leftValue": "={{ $json.createdAt.last() }}",
+                    "rightValue": "={{$now.minus(10,'seconds')}}",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "before"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Prosseguir"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Esperar"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1792,
+        0
+      ],
+      "id": "c4b2aa51-5b9c-40e8-885d-fb53025a6ba6",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "buffer_msg",
+          "cachedResultUrl": "/projects/W8sWcqcBrkOu1smK/datatables/6YvXtbDQDWjkDhB3"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefone",
+              "keyValue": "={{ $('Messagem').item.json.msg.telefone }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2064,
+        16
+      ],
+      "id": "cacec977-6361-495a-b615-2ae57b39c0c5",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "id_message"
+            },
+            {
+              "fieldToAggregate": "createdAt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        32
+      ],
+      "id": "febf0f31-7952-40e6-ae8a-c637eabb17ff",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        0
+      ],
+      "id": "d3f561b7-c3e1-47c2-95a0-573c1812a28f",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.conversation.contact_inbox.source_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        3584,
+        432
+      ],
+      "id": "8ed3957b-e925-41bb-8058-ff37f7c02bac",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "JrKi55kioNjKZHLD",
+          "name": "Postgres Supabase TRS"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.conversation.contact_inbox.source_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3696,
+        400
+      ],
+      "id": "45211767-3fed-49d6-82c4-0a522863b317",
+      "name": "Simple Memory2"
+    }
+  ],
+  "connections": {
+    "Texto": {
+      "main": [
+        [
+          {
+            "node": "Messagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imagem": {
+      "main": [
+        [
+          {
+            "node": "Messagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio": {
+      "main": [
+        [
+          {
+            "node": "Messagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File": {
+      "main": [
+        [
+          {
+            "node": "Messagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message type": {
+      "main": [
+        [
+          {
+            "node": "Texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Baixar áudio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Baixar File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not supported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Calculator2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Cadastrador": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Messagem": {
+      "main": [
+        [
+          {
+            "node": "Enviar msg pra lista",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastrar usuário no Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se contato tem cadastro": {
+      "main": [
+        [
+          {
+            "node": "Procurar Contato Chatwoot1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Teste",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Teste",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Teste",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Teste",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastrar usuário no Postgres1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Teste",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Teste",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WABA pelo Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procurar Contato Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "AI Memorizadora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alterar observação do contato no Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WABA pelo Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar áudio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar File": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar": {
+      "main": [
+        [
+          {
+            "node": "Concatenação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Buscar lista atualizada",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concatenação": {
+      "main": [
+        [
+          {
+            "node": "Verifica se contato tem cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar msg pra lista": {
+      "main": [
+        [
+          {
+            "node": "Buscar lista atualizada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar lista atualizada": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Procurar Contato Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Memorizadora": {
+      "main": [
+        [
+          {
+            "node": "Alterar observação do contato no Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Memorizadora",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procurar Contato Chatwoot1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastro Chatwoot": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Memorizadora",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Long": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alterar observação do contato no Chatwoot3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Memorizadora1": {
+      "main": [
+        [
+          {
+            "node": "Alterar observação do contato no Chatwoot3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Memorizadora1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Memorizadora1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deletar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Memorizadora1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mensagem é pra IA?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Memorizadora2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se não for um status do chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Mensagem do usuário?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem é pra IA?": {
+      "main": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem do usuário?": {
+      "main": [
+        [
+          {
+            "node": "Message type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If is the agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Se não for um status do chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If is the agent": {
+      "main": [
+        [
+          {
+            "node": "Execution Data3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Memorizadora2": {
+      "main": [
+        [
+          {
+            "node": "Alterar tag da conversa no Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Memorizadora2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Memorizadora2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alterar tag da conversa no Chatwoot": {
+      "main": [
+        []
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete row(s)": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Concatenação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Cadastrador",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "File": [
+      {
+        "json": {
+          "text": "O usuário mandou um arquivo PDF:\nDescribe this file\n\nConteúdo do arquivo PDF:\nBilhete Eletrônico - Eticket\nE-mail: silviogaia27@gmail.com\nTelefone: 55 11 26676134\nInformações do Bilhete\nNúmero do bilhete Localizador da Reserva Passageiro Emissão\n577 0009018584 HPMRQX ADT - PEREIRA/GUILHERME EDUARDO \nSCG VIAGENS NOVA\n22/08/2025 por Silvio Gaia\nFidelidade\nTudo Azul 9872478972\nVoos\nCia Origem / Destino Voo Esc. Cl. Info Loc Cia\nGRU - SAO PAULO\nGuarulhos\n10 SET 2025 10:00\nCWB - CURITIBA\n10 SET 2025 11:05\nAD 4826 0 M\nFamília: Azul\nAvião: E95\nBase Tar: M2141RBG\nHPMRQX\nCWB - CURITIBA\n11 SET 2025 18:30\nGRU - SAO PAULO\nGuarulhos\n11 SET 2025 19:40\nAD 4831 0 O\nFamília: Azul\nAvião: E95\nBase Tar: O2211RBG\nHPMRQX\nMochila ou bolsa Bagagem de mão Bagagem despachada Contém Não contém Info. Indisponível\nEMD\nForma de Pagamento Tipo Eticket Data Valor Passageiro Trecho(s) Produto\nFaturado Servico 5770009065200 10/09/2025 BRL 200,00 PEREIRA/GUILHERME EDUARDO Bagagem\nFaturado Servico 5770009065202 10/09/2025 BRL 200,00 PEREIRA/GUILHERME EDUARDO Bagagem\nFaturado Servico 5770009065203 10/09/2025 BRL 200,00 PEREIRA/GUILHERME EDUARDO Bagagem\nTarifamento\nTarifa Tx Emb. Taxa DU Total\nR$ 697,60 R$ 80,36 R$ 69,76 R$ 847,72\nPagamento\nForma Tarifa Tx Emb. Taxa DU Total Detalhes\nFaturado R$ 697,60 R$ 80,36 R$ 69,76 R$ 847,72 ---\nRegra Tarifária\nDescrição\nServiço de Atendimento ao Consumidor:\nAtendimento ao Cliente (SAC): 0800-884-4040\nRegras Tarifárias abaixo somente são válidas para voos Operados pela AZUL LINHAS AÉREAS BRASILEIRAS ida e S.A.\nCaso sua passagem possua voo operado por parceiro da AZUL, consulte o nosso CallCenter.\nBase tarifária (Voos Domésticos dentro do Brasil e Voos Internacionais dentro da América do Sul):\n-Tarifa Mais AZUL: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados\n-Tarifa AZUL: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados\nBase tarifária (Voos Internacionais - Exceto dentro da América do Sul):\n- Economy:\n-Tarifa AzulSuper: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados - Trechos Internacionais\n-Tarifa MaisAzul: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados - Trechos Internacionais\n-Tarifa Azul: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e trechos\nselecionados - Trechos Internacionais\n-Business: Classe Executiva, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e trechos\nselecionados - Trechos Internacionais - Caso ocorra conexão com qualquer trecho doméstico dentro do Brasil, a classe de\nserviço será econômica para o trechos dentro do Brasil, o serviço de executiva somente é prestado no trecho internacional.\n&nbsp;\nBase tarifária Tudo Azul (Doméstico e Internacional):\nClasse econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e trechos\nselecionados.\nCombinações:\n\nCaso ocorra a combinação de uma tarifa com outra, a regra a ser aplicada será a mais restritiva ao cliente.\n&nbsp;\nEndossos:\nNão permitidos.\n&nbsp;\nAplicação:\nSomente para voo AD operado por AD.\n&nbsp;\nTipo de Viagem:\nIda ou ida e volta\nTodos os trechos adquiridos numa mesma reserva passam a compor um único itinerário, que deve ser integralmente\nutilizado conforme programado, incluindo a ordem dos voos.\nQualquer alteração acarretara nova precificação do itinerário.\n&nbsp;\nPermanência mínima:\ntrechos internacionais de 4 (quatro dias) no destino\n&nbsp;\nPermanência máxima:\nnão aplicável\n&nbsp;\nParadas:\nnão permitidas\n&nbsp;\nCancelamentos / Alterações: (Voos Domésticos dentro do Brasil) - PONTUAÇÃO TUDO AZUL LER MAIS ABAIXO\n&nbsp;\nDireito de Arrependimento: Será permitido desistir do Bilhete adquirido, sem ônus, no prazo de até 24 horas\napós a emissão do Bilhete e o respectivo recebimento do comprovante, desde que haja antecedência igual ou\nsuperior a 07 dias em relação à data de embarque do voo de ida.\nTarifas Mais AZUL e AZUL com valor igual ou inferior a R$ 550,00, NÃO PERMITEM alteração e/ou cancelamento\n&nbsp;\nTarifas Mais AZUL e AZUL com valor superior a R$ 550,00 exceto Classe de Reserva Y\n(Cancelamento e/ou Alteração via Website e Mobile)\nSerá cobrado R$ 450,00 por passageiro e por trecho (classes V, UU, X, W, OL, OO e Z, será cobrado o valor de R$ 525,00 por\npassageiro e por trecho)\nTarifas Mais AZUL e AZUL com valor superior a R$ 550,00\n(Cancelamento e/ou Alteração via Central de Atendimento, Loja ou Aeroportos)\nSerá cobrado R$ R$ 550,00por passageiro e por trecho (classes V, UU, X, W, OL, OO e Z será cobrado o valor de R$ 550,00por\npassageiro e por trecho, exceto Classe de Reserva Y)\n&nbsp;\nTarifas com regras flexíveis (reserva na Classe Y): Serão disponibilizadas para comercialização somente via Central de\nAtendimento. Não serão cobradas taxas de alteração ou cancelamento. Reembolso de 95% (noventa e cinco por cento) do\nvalor da tarifa. Não será cobrará taxa de emissão.\nEm caso de alteração de voo, além deste valor, o passageiro terá que arcar com eventual diferença tarifária.\nA diferença tarifária pode ocorrer devido aumento de preços assim como por indisponibilidade da mesma classe tarifária\npara o novo voo desejado.\n&nbsp;\nCaso o bilhete ainda não tenha sido utilizado, as alterações deverão ocorrer em até no máximo 1 ano da data da compra.\nO pedido de cancelamento do bilhete não implicará automaticamente em reembolso do crédito restante, devendo ocorrer\npedido específico de reembolso e se a regra tarifária assim permitir.\nEm qualquer caso, os valores pagos deverão ser integralmente utilizados em até 1 ano da data de reserva original. Após este\nprazo, o valor em crédito não poderá ser mais utilizado ou reembolsado.\nCancelamentos / Alterações: (Voos Internacionais)\nTrechos dentro da América do Sul e Caiena - Exceto dentro do Brasil\nTarifas Mais AZUL e AZUL:\nR$ 450,00 ou US$ 85,00 por passageiro e por trecho (todas as classes)\nTrechos Internacionais &nbsp;- Exceto dentro da América do Sul\nTarifa Economy:\n-Tarifa AzulSuper: &nbsp;US$ 200,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\n-Tarifa MaisAzul: US$ 225,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\n-Tarifa Azul: US$ 250,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\nTarifa Business:\nUS$ 250,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\nEUR 250,00 por passageiro e por trecho (todas as classes) para voos de/para Europa.\nTarifas Pontuação Tudo Azul\nNão é permitida alteração em bilhetes emitidos com pontos Tudo Azul. A alteração de um bilhete aéreo emitido com pontos\n\nTudo Azul ocorrerá a partir do cancelamento do mesmo, uma nova emissão somente será válida se, os pontos oriundos da\nreserva cancelada, estejam válidos.\nNa ocorrência de compra de passagem com pontuação para duas ou mais pessoas na mesma reserva, não será possível\ncancelamento ou alteração para apenas uma delas.\nSendo cabível o reembolso dos pontos, somente os pontos válidos na época do pedido de cancelamento/reembolso,\nretornarão para a conta Tudo Azul de onde os pontos foram consumidos em até 5 dias úteis com a validade original do\nacúmulo.\nCancelamento após a compra, será cobrado R$ 550,00 para trechos dentro do Brasil por trecho e por passageiro, para\ntrechos internacionais ou conexão doméstica com internacional, será aplicada a taxa de US$ 225,00 por passageiro e por\ntrecho para cabine econômica ou US$ 250,00 por passageiro e por trecho para a cabine executiva, e somente poderá ser\nrealizado via call center.\nDiferenças de pontuação poderão ocorrer no caso da indisponibilidade da mesma classe tarifária da reserva original, assim\nsendo, será cobrada a diferença para a nova classe tarifária além da respectiva taxa de cancelamento. A reserva original\ncaducará no prazo de um ano a contar da data da compra, ou seja, o passageiro perderá qualquer direito referente à reserva\nadquirida uma vez expirado esse prazo.\nO cancelamento não gerará automaticamente o reembolso da pontuação utilizada. O reembolso será efetuado somente com a\nsolicitação expressa do passageiro, estando sujeito à cobrança de taxa correspondente pela Azul (descrita no item de\nReembolso), bem como a respectiva taxa de cancelamento. Somente tarifas públicas (Tarifas que são disponibilizadas pela\nAZUL em seus canais de venda).\nNos casos de no-show (não comparecimento para embarque do voo, na data, trecho e horário reservados na passagem\ncomprada) serão cobradas as taxas de no-show (descritas no item no-show).\n&nbsp;\nReembolsos (Voos Domésticos dentro do Brasil)\n&nbsp;\nTarifas Mais AZUL e AZUL com classe de reserva - V, UU, X, W, OL, OO e Z, NÃO PERMITEM REEMBOLSO.\n&nbsp;\nTarifas Mais AZUL e AZUL com valor igual ou inferior a R$ 655,00, NÃO PERMITEM REEMBOLSO.\nTarifas Mais AZUL e AZUL com valor superior a R$ 655,00 - Exceto Classe de Reserva Y\nSerá cobrado 70% do valor pago cumulativamente com cancelamento e o não comparecimento (no-show), caso o mesmo\nocorra.\nTarifas Mais AZUL e AZUL - Somente Classe de Reserva Y\nTarifas com regras flexíveis: Serão disponibilizadas para comercialização somente via Central de Atendimento. Não serão\ncobradas taxas de alteração ou cancelamento. Reembolso de 95% (noventa e cinco por cento) do valor da tarifa. Não será\ncobrará taxa de emissão\nReembolsos &nbsp;(Voos Internacionais)\n&nbsp;\nTrechos dentro da América do Sul - Exceto dentro do Brasil\n&nbsp;\nTarifas Mais AZUL e AZUL:\nUS$ 85,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas (todas as classes)\nTrechos Internacionais &nbsp;- Exceto dentro da América do Sul\nTarifas Economy\n-Tarifa AzulSuper: &nbsp;Será cobrado US$ 200,00 por passageiro e por trecho, mais as taxas de cancelamento acima\nmencionadas para voos de/para Estados Unidos e de/para Europa.\n-Tarifa MaisAzul: Será cobrado US$ 225,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas\npara voos de/para Estados Unidos e de/para Europa.\n-Tarifa Azul Será cobrado US$ 250,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas para\nvoos de/para Estados Unidos e de/para Europa.\nTarifas Business\nSerá cobrado US$ 250,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas para voos de/para\nEstados Unidos e de/para Europa.\nTarifas Pontuação Tudo Azul E Pontos Mais Dinheiro:\nSerá cobrado R$ 550,00 para trechos dentro do Brasil por trecho e por passageiro\nSerá cobrado US$ 225,00 para cabine econômica por trecho e por passageiro\nSerá cobrado US$ 250,00 para a cabine executiva por trecho e por passageiro\nNo caso de reembolso de bilhete emitido com pontos expirados, somente os pontos validos retornarão para a conta.\nNão comparecimento ao embarque (No-Show):\n&nbsp;\nVoos Domésticos dentro do Brasil\nTarifas Mais AZUL e AZUL, exceto Classe de Reserva Y &nbsp;\nSerá cobrado R$ 550,00 por passageiro e por trecho.\n(Classes &nbsp;V, UU, X, W, OL, OO e Z, não existe valor de reembolso nem crédito na Azul na ocorrência de No-Show)\nVoos Internacionais\n\n&nbsp;\nTrechos dentro da América do Sul - Exceto dentro do Brasil\n&nbsp;\nTarifas Mais AZUL e AZUL\nSerá cobrado R$ 500,00 ou USD 120.00 por passageiro e por trecho.\nTrechos dentro Internacionais &nbsp;- Exceto dentro da América do Sul\n&nbsp;\nTarifa Economy :\n-Tarifa AzulSuper: &nbsp;Será cobrado US$ 350,00 por passageiro e por trecho\n-Tarifa MaisAzul: Será cobrado US$ 350,00 por passageiro e por trecho\n-Tarifa Azul: Será cobrado US$ 350,00 por passageiro e por trecho\nTarifa Business\nSerá cobrado US$ 350,00 por passageiro e por trecho.\nTarifa para criança de 2 a 12 anos\nCrianças de 2 a 12 anos incompletos pagam o mesmo valor da tarifa de um adulto em voos Azul.\nVoos Domésticos dentro do Brasil\nBebê até 2 anos incompletos deve viajar no colo de um adulto, sem custos, em voos domésticos.\nAo comprar uma passagem de ida e volta para bebê e este completar 02 anos entre a data da ida e a data da volta, deve ser\ncomprado o trecho de ida separado do trecho da volta, pois no retorno o bebê deverá pagar pela passagem com tarifa de\ncriança.\nTarifas Pontuação Tudo Azul:\nNão permite desconto para crianças\nTrechos internacionais: Tarifas Azul Super/ Mais AZUL / AZUL\nBebê até 2 anos incompletos deve viajar no colo de um adulto e para ele será cobrada tarifa no valor de 10% da aplicada a\num adulto na hora da compra.”\nTarifa Business:\nNão permite desconto para crianças\nFranquia de Bagagem:\nVoos Domésticos dentro do Brasil:\nAdulto ou Criança - de 2 anos completos ate 12 anos incompletos:\nTarifas Mais AZUL - Permitido 1 (Um) volume de Bagagem com Total de 23KG por passageiro e por trecho.\nTarifas AZUL - Não permite Bagagem Despachada &nbsp;\nBebê - até 2 anos incompletos:\nSem franquia de bagagem porém pode-se levar 1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra\ne sem cobranças.\nTrechos entre países da &nbsp;América do Sul:\nAdulto - a partir de 12 anos completos:\nTarifas Mais AZUL - Permitido 1 (Uma) Peça de Bagagem com Total de 23KG por passageiro e por trecho.\nTarifas AZUL - Não permite Bagagem Despachada &nbsp;\nCriança - de 2 anos completos ate 12 anos incompletos:\nTarifas Mais AZUL - Permitido 1 (Uma) Peça de Bagagem com Total de 23KG por passageiro e por trecho.\nTarifas AZUL - Não permite Bagagem Despachada\nBebê - até 2 anos incompletos:\n1 peça de até 10KG cada, além de 1 cadeira de bebe, 1 bebe conforto ou 1 carrinho por bebe como franquia extra e sem\ncobrancas.\nTrechos de para Estados Unidos da América, Europa e Brasil:\nTarifa Azul Super:\nAdulto - a partir de 12 anos completos:\n2 peças de até 23KG cada.\nCriança - de 2 anos completos ate 12 anos incompletos:\n2 peças de até 23KG cada.\nBebê - até 2 anos incompletos:\n1 peça de até 10KG cada, além de 1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra e sem\ncobrancas.\nTarifa Mais Azul:\nAdulto - a partir de 12 anos completos:\n1 peça de até 23KG.\nCriança - de 2 anos completos ate 12 anos incompletos:\n1 peças de até 23KG.\nBebê - até 2 anos incompletos:\n1 peça de até 10KG cada, além de 1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra e sem\ncobrancas.\nTarifa Azul:\nAdulto - a partir de 12 anos completos:\n\nSem franquia de bagagem.\nCriança - de 2 anos completos ate 12 anos incompletos:\nSem franquia de bagagem\nBebê - até 2 anos incompletos:\n1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra e sem cobrancas.\nRegras Tarifárias abaixo somente são válidas para voos Operados pela AZUL LINHAS AÉREAS BRASILEIRAS ida e S.A.\nCaso sua passagem possua voo operado por parceiro da AZUL, consulte o nosso CallCenter.\nBase tarifária (Voos Domésticos dentro do Brasil e Voos Internacionais dentro da América do Sul):\n-Tarifa Mais AZUL: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados\n-Tarifa AZUL: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados\nBase tarifária (Voos Internacionais - Exceto dentro da América do Sul):\n- Economy:\n-Tarifa AzulSuper: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados - Trechos Internacionais\n-Tarifa MaisAzul: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e\ntrechos selecionados - Trechos Internacionais\n-Tarifa Azul: Classe econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e trechos\nselecionados - Trechos Internacionais\n-Business: Classe Executiva, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e trechos\nselecionados - Trechos Internacionais - Caso ocorra conexão com qualquer trecho doméstico dentro do Brasil, a classe de\nserviço será econômica para o trechos dentro do Brasil, o serviço de executiva somente é prestado no trecho internacional.\n&nbsp;\nBase tarifária Tudo Azul (Doméstico e Internacional):\nClasse econômica, tarifa promocional, designada para a classe tarifária reservada para os voos, datas e trechos\nselecionados.\nCombinações:\nCaso ocorra a combinação de uma tarifa com outra, a regra a ser aplicada será a mais restritiva ao cliente.\n&nbsp;\nEndossos:\nNão permitidos.\n&nbsp;\nAplicação:\nSomente para voo AD operado por AD.\n&nbsp;\nTipo de Viagem:\nIda ou ida e volta\nTodos os trechos adquiridos numa mesma reserva passam a compor um único itinerário, que deve ser integralmente\nutilizado conforme programado, incluindo a ordem dos voos.\nQualquer alteração acarretara nova precificação do itinerário.\n&nbsp;\nPermanência mínima:\ntrechos internacionais de 4 (quatro dias) no destino\n&nbsp;\nPermanência máxima:\nnão aplicável\n&nbsp;\nParadas:\nnão permitidas\n&nbsp;\nCancelamentos / Alterações: (Voos Domésticos dentro do Brasil) - PONTUAÇÃO TUDO AZUL LER MAIS ABAIXO\n&nbsp;\nDireito de Arrependimento: Será permitido desistir do Bilhete adquirido, sem ônus, no prazo de até 24 horas\napós a emissão do Bilhete e o respectivo recebimento do comprovante, desde que haja antecedência igual ou\nsuperior a 07 dias em relação à data de embarque do voo de ida.\nTarifas Mais AZUL e AZUL com valor igual ou inferior a R$ 550,00, NÃO PERMITEM alteração e/ou cancelamento\n&nbsp;\nTarifas Mais AZUL e AZUL com valor superior a R$ 550,00 exceto Classe de Reserva Y\n(Cancelamento e/ou Alteração via Website e Mobile)\nSerá cobrado R$ 450,00 por passageiro e por trecho (classes V, UU, X, W, OL, OO e Z, será cobrado o valor de R$ 525,00 por\npassageiro e por trecho)\nTarifas Mais AZUL e AZUL com valor superior a R$ 550,00\n(Cancelamento e/ou Alteração via Central de Atendimento, Loja ou Aeroportos)\nSerá cobrado R$ R$ 550,00por passageiro e por trecho (classes V, UU, X, W, OL, OO e Z será cobrado o valor de R$ 550,00por\npassageiro e por trecho, exceto Classe de Reserva Y)\n\n&nbsp;\nTarifas com regras flexíveis (reserva na Classe Y): Serão disponibilizadas para comercialização somente via Central de\nAtendimento. Não serão cobradas taxas de alteração ou cancelamento. Reembolso de 95% (noventa e cinco por cento) do\nvalor da tarifa. Não será cobrará taxa de emissão.\nEm caso de alteração de voo, além deste valor, o passageiro terá que arcar com eventual diferença tarifária.\nA diferença tarifária pode ocorrer devido aumento de preços assim como por indisponibilidade da mesma classe tarifária\npara o novo voo desejado.\n&nbsp;\nCaso o bilhete ainda não tenha sido utilizado, as alterações deverão ocorrer em até no máximo 1 ano da data da compra.\nO pedido de cancelamento do bilhete não implicará automaticamente em reembolso do crédito restante, devendo ocorrer\npedido específico de reembolso e se a regra tarifária assim permitir.\nEm qualquer caso, os valores pagos deverão ser integralmente utilizados em até 1 ano da data de reserva original. Após este\nprazo, o valor em crédito não poderá ser mais utilizado ou reembolsado.\nCancelamentos / Alterações: (Voos Internacionais)\nTrechos dentro da América do Sul e Caiena - Exceto dentro do Brasil\nTarifas Mais AZUL e AZUL:\nR$ 450,00 ou US$ 85,00 por passageiro e por trecho (todas as classes)\nTrechos Internacionais &nbsp;- Exceto dentro da América do Sul\nTarifa Economy:\n-Tarifa AzulSuper: &nbsp;US$ 200,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\n-Tarifa MaisAzul: US$ 225,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\n-Tarifa Azul: US$ 250,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\nTarifa Business:\nUS$ 250,00 por passageiro e por trecho (todas as classes) para voos de/para Estados Unidos.\nEUR 250,00 por passageiro e por trecho (todas as classes) para voos de/para Europa.\nTarifas Pontuação Tudo Azul\nNão é permitida alteração em bilhetes emitidos com pontos Tudo Azul. A alteração de um bilhete aéreo emitido com pontos\nTudo Azul ocorrerá a partir do cancelamento do mesmo, uma nova emissão somente será válida se, os pontos oriundos da\nreserva cancelada, estejam válidos.\nNa ocorrência de compra de passagem com pontuação para duas ou mais pessoas na mesma reserva, não será possível\ncancelamento ou alteração para apenas uma delas.\nSendo cabível o reembolso dos pontos, somente os pontos válidos na época do pedido de cancelamento/reembolso,\nretornarão para a conta Tudo Azul de onde os pontos foram consumidos em até 5 dias úteis com a validade original do\nacúmulo.\nCancelamento após a compra, será cobrado R$ 550,00 para trechos dentro do Brasil por trecho e por passageiro, para\ntrechos internacionais ou conexão doméstica com internacional, será aplicada a taxa de US$ 225,00 por passageiro e por\ntrecho para cabine econômica ou US$ 250,00 por passageiro e por trecho para a cabine executiva, e somente poderá ser\nrealizado via call center.\nDiferenças de pontuação poderão ocorrer no caso da indisponibilidade da mesma classe tarifária da reserva original, assim\nsendo, será cobrada a diferença para a nova classe tarifária além da respectiva taxa de cancelamento. A reserva original\ncaducará no prazo de um ano a contar da data da compra, ou seja, o passageiro perderá qualquer direito referente à reserva\nadquirida uma vez expirado esse prazo.\nO cancelamento não gerará automaticamente o reembolso da pontuação utilizada. O reembolso será efetuado somente com a\nsolicitação expressa do passageiro, estando sujeito à cobrança de taxa correspondente pela Azul (descrita no item de\nReembolso), bem como a respectiva taxa de cancelamento. Somente tarifas públicas (Tarifas que são disponibilizadas pela\nAZUL em seus canais de venda).\nNos casos de no-show (não comparecimento para embarque do voo, na data, trecho e horário reservados na passagem\ncomprada) serão cobradas as taxas de no-show (descritas no item no-show).\n&nbsp;\nReembolsos (Voos Domésticos dentro do Brasil)\n&nbsp;\nTarifas Mais AZUL e AZUL com classe de reserva - V, UU, X, W, OL, OO e Z, NÃO PERMITEM REEMBOLSO.\n&nbsp;\nTarifas Mais AZUL e AZUL com valor igual ou inferior a R$ 655,00, NÃO PERMITEM REEMBOLSO.\nTarifas Mais AZUL e AZUL com valor superior a R$ 655,00 - Exceto Classe de Reserva Y\nSerá cobrado 70% do valor pago cumulativamente com cancelamento e o não comparecimento (no-show), caso o mesmo\nocorra.\nTarifas Mais AZUL e AZUL - Somente Classe de Reserva Y\nTarifas com regras flexíveis: Serão disponibilizadas para comercialização somente via Central de Atendimento. Não serão\ncobradas taxas de alteração ou cancelamento. Reembolso de 95% (noventa e cinco por cento) do valor da tarifa. Não será\ncobrará taxa de emissão\nReembolsos &nbsp;(Voos Internacionais)\n&nbsp;\nTrechos dentro da América do Sul - Exceto dentro do Brasil\n&nbsp;\nTarifas Mais AZUL e AZUL:\nUS$ 85,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas (todas as classes)\n\nTrechos Internacionais &nbsp;- Exceto dentro da América do Sul\nTarifas Economy\n-Tarifa AzulSuper: &nbsp;Será cobrado US$ 200,00 por passageiro e por trecho, mais as taxas de cancelamento acima\nmencionadas para voos de/para Estados Unidos e de/para Europa.\n-Tarifa MaisAzul: Será cobrado US$ 225,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas\npara voos de/para Estados Unidos e de/para Europa.\n-Tarifa Azul Será cobrado US$ 250,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas para\nvoos de/para Estados Unidos e de/para Europa.\nTarifas Business\nSerá cobrado US$ 250,00 por passageiro e por trecho, mais as taxas de cancelamento acima mencionadas para voos de/para\nEstados Unidos e de/para Europa.\nTarifas Pontuação Tudo Azul E Pontos Mais Dinheiro:\nSerá cobrado R$ 550,00 para trechos dentro do Brasil por trecho e por passageiro\nSerá cobrado US$ 225,00 para cabine econômica por trecho e por passageiro\nSerá cobrado US$ 250,00 para a cabine executiva por trecho e por passageiro\nNo caso de reembolso de bilhete emitido com pontos expirados, somente os pontos validos retornarão para a conta.\nNão comparecimento ao embarque (No-Show):\n&nbsp;\nVoos Domésticos dentro do Brasil\nTarifas Mais AZUL e AZUL, exceto Classe de Reserva Y &nbsp;\nSerá cobrado R$ 550,00 por passageiro e por trecho.\n(Classes &nbsp;V, UU, X, W, OL, OO e Z, não existe valor de reembolso nem crédito na Azul na ocorrência de No-Show)\nVoos Internacionais\n&nbsp;\nTrechos dentro da América do Sul - Exceto dentro do Brasil\n&nbsp;\nTarifas Mais AZUL e AZUL\nSerá cobrado R$ 500,00 ou USD 120.00 por passageiro e por trecho.\nTrechos dentro Internacionais &nbsp;- Exceto dentro da América do Sul\n&nbsp;\nTarifa Economy :\n-Tarifa AzulSuper: &nbsp;Será cobrado US$ 350,00 por passageiro e por trecho\n-Tarifa MaisAzul: Será cobrado US$ 350,00 por passageiro e por trecho\n-Tarifa Azul: Será cobrado US$ 350,00 por passageiro e por trecho\nTarifa Business\nSerá cobrado US$ 350,00 por passageiro e por trecho.\nTarifa para criança de 2 a 12 anos\nCrianças de 2 a 12 anos incompletos pagam o mesmo valor da tarifa de um adulto em voos Azul.\nVoos Domésticos dentro do Brasil\nBebê até 2 anos incompletos deve viajar no colo de um adulto, sem custos, em voos domésticos.\nAo comprar uma passagem de ida e volta para bebê e este completar 02 anos entre a data da ida e a data da volta, deve ser\ncomprado o trecho de ida separado do trecho da volta, pois no retorno o bebê deverá pagar pela passagem com tarifa de\ncriança.\nTarifas Pontuação Tudo Azul:\nNão permite desconto para crianças\nTrechos internacionais: Tarifas Azul Super/ Mais AZUL / AZUL\nBebê até 2 anos incompletos deve viajar no colo de um adulto e para ele será cobrada tarifa no valor de 10% da aplicada a\num adulto na hora da compra.”\nTarifa Business:\nNão permite desconto para crianças\nFranquia de Bagagem:\nVoos Domésticos dentro do Brasil:\nAdulto ou Criança - de 2 anos completos ate 12 anos incompletos:\nTarifas Mais AZUL - Permitido 1 (Um) volume de Bagagem com Total de 23KG por passageiro e por trecho.\n\nTarifas AZUL - Não permite Bagagem Despachada &nbsp;\nBebê - até 2 anos incompletos:\nSem franquia de bagagem porém pode-se levar 1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra\ne sem cobranças.\nTrechos entre países da &nbsp;América do Sul:\nAdulto - a partir de 12 anos completos:\nTarifas Mais AZUL - Permitido 1 (Uma) Peça de Bagagem com Total de 23KG por passageiro e por trecho.\nTarifas AZUL - Não permite Bagagem Despachada &nbsp;\nCriança - de 2 anos completos ate 12 anos incompletos:\nTarifas Mais AZUL - Permitido 1 (Uma) Peça de Bagagem com Total de 23KG por passageiro e por trecho.\nTarifas AZUL - Não permite Bagagem Despachada\nBebê - até 2 anos incompletos:\n1 peça de até 10KG cada, além de 1 cadeira de bebe, 1 bebe conforto ou 1 carrinho por bebe como franquia extra e sem\ncobrancas.\nTrechos de para Estados Unidos da América, Europa e Brasil:\nTarifa Azul Super:\nAdulto - a partir de 12 anos completos:\n2 peças de até 23KG cada.\nCriança - de 2 anos completos ate 12 anos incompletos:\n2 peças de até 23KG cada.\nBebê - até 2 anos incompletos:\n1 peça de até 10KG cada, além de 1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra e sem\ncobrancas.\nTarifa Mais Azul:\nAdulto - a partir de 12 anos completos:\n1 peça de até 23KG.\nCriança - de 2 anos completos ate 12 anos incompletos:\n1 peças de até 23KG.\nBebê - até 2 anos incompletos:\n1 peça de até 10KG cada, além de 1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra e sem\ncobrancas.\nTarifa Azul:\nAdulto - a partir de 12 anos completos:\nSem franquia de bagagem.\nCriança - de 2 anos completos ate 12 anos incompletos:\nSem franquia de bagagem\nBebê - até 2 anos incompletos:\n1 cadeira de bebê, 1 bebê conforto ou 1 carrinho por bebê como franquia extra e sem cobrancas.\nInformações\nOs voos são válidos apenas para utilização nas datas e horários reservados e emitidos. Em caso de A LTERA ÇÃ O V O LUNTÁ RIA estão\nsujeitos às condições impostas pela companhia aérea e pela regra tarifária. O transporte aéreo aqui contratado está sujeito às condições\ngerais de transporte aprovadas pelo Comando da Aeronáutica e às demais legislações aplicáveis. Algumas tarifas não permitem\nalterações e/ou reembolso após a compra. Caso julgue necessário ter esta informação, consulte seu agente de viagem. O não\ncomparecimento para o embarque (no-show) em qualquer voo cancela os voos subsequentes. Em alguns casos, perde-se o bilhete,\nimpossibilitando alteração e/ou reembolso.\nInformações para Embarque\nApresente-se em nosso checkin com 2 horas de antecedência em voos nacionais e com 3 horas de antecedência em voos\ninternacionais.\nLevar documento original: Carteira de Identidade para vôos nacionais.\nLevar documento original: Passaporte e os vistos necessários para entrada no pais de destino para voos internacionais.\nInformações sobre validade de PA SSA PO RTE, V A CINA S e V ISTO S que possam ser necessários para sua viagem devem ser\nconsultados com as respectivas embaixadas ou despachantes de vistos. Verifique essa necessidade para todos os países\nenvolvidos na viagem, mesmo aqueles onde há apenas uma escala. Lembre-se que alguns países exigem que o passaporte tenha\numa validade mínima de 6 meses para embarcar.\nhttps://www.voeazul.com.br/para-sua-viagem/informacoes-para-viajar/bagagem-despachada"
+        }
+      }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "Input a armazenar": "O usuário é Quésia, telefone 11 981160001, aceita ser chamada.",
+          "numero do lead": "5511988488227"
+        }
+      }
+    ],
+    "Buscar lista atualizada": [
+      {
+        "json": {
+          "List_array": [
+            "{\"id\":2008,\"text\":\"teste de tags\",\"time\":\"2025-11-21T11:11:45.000-03:00\",\"telefone\":\"+5511988488227\"}"
+          ]
+        }
+      }
+    ],
+    "Edit Fields3": [
+      {
+        "json": {
+          "custom_attributes": "{\"rg\":\"\",\"cnpj\":\"\",\"profissao\":\"\",\"prioridade\":\"Baixa\",\"profissão\":\"\",\"valor_pago\":\"\",\"valor_causa\":\"\",\"estado_civil\":\"\",\"nome_cliente\":\"\",\"tipo_de_acao\":\"\",\"email_cliente\":\"\",\"nacionalidade\":\"\",\"origem_do_lead\":\"\",\"resumo_do_caso\":\"Teste sem prioridade\",\"area_do_direito\":\"\",\"telefone_cliente\":\"0\",\"status_financeiro\":\"\",\"forma_de_pagamento\":\"\",\"numero_do_processo\":\"\",\"responsavel_interno\":\"\",\"categoria_de_cliente\":\"\",\"data_ultimo_pagamento\":\"\",\"numero_do_processo_cnj\":\"\",\"endereco_completo_do_cliente\":\"\"}",
+          "additional_attributes": "{\"description\":\"Lead recebido com prioridade baixa informada.\"}",
+          "text": "teste de tags",
+          "total_attributes": "{\"additional_attributes\":{\"description\":\"Lead recebido com prioridade baixa informada.\"},\"availability_status\":\"offline\",\"email\":null,\"id\":6,\"name\":\"Guilherme Eduardo Pereira\",\"phone_number\":\"+5511988488227\",\"blocked\":false,\"identifier\":null,\"thumbnail\":\"\",\"custom_attributes\":{\"rg\":\"\",\"cnpj\":\"\",\"profissao\":\"\",\"prioridade\":\"Baixa\",\"profissão\":\"\",\"valor_pago\":\"\",\"valor_causa\":\"\",\"estado_civil\":\"\",\"nome_cliente\":\"\",\"tipo_de_acao\":\"\",\"email_cliente\":\"\",\"nacionalidade\":\"\",\"origem_do_lead\":\"\",\"resumo_do_caso\":\"Teste sem prioridade\",\"area_do_direito\":\"\",\"telefone_cliente\":\"0\",\"status_financeiro\":\"\",\"forma_de_pagamento\":\"\",\"numero_do_processo\":\"\",\"responsavel_interno\":\"\",\"categoria_de_cliente\":\"\",\"data_ultimo_pagamento\":\"\",\"numero_do_processo_cnj\":\"\",\"endereco_completo_do_cliente\":\"\"},\"last_activity_at\":1763734305,\"created_at\":1762822544,\"contact_inboxes\":[{\"source_id\":\"5511988488227\",\"inbox\":{\"id\":4,\"avatar_url\":\"\",\"channel_id\":2,\"name\":\"WABA Agent\",\"channel_type\":\"Channel::Whatsapp\",\"provider\":\"whatsapp_cloud\"}}]}"
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.tivas.com.br",
+            "user-agent": "rest-client/2.1.0 (linux-musl x86_64) ruby/3.4.4p34",
+            "content-length": "3128",
+            "accept": "application/json",
+            "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.21.0.1",
+            "x-forwarded-host": "n8n.tivas.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "1535a719a61f",
+            "x-real-ip": "172.21.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "account": {
+              "id": 2,
+              "name": "TRS Jurídico"
+            },
+            "additional_attributes": {},
+            "content_attributes": {},
+            "content_type": "text",
+            "content": null,
+            "conversation": {
+              "additional_attributes": {},
+              "can_reply": true,
+              "channel": "Channel::Whatsapp",
+              "contact_inbox": {
+                "id": 304,
+                "contact_id": 343,
+                "inbox_id": 4,
+                "source_id": "5511922302506",
+                "created_at": "2026-02-10T19:57:45.346Z",
+                "updated_at": "2026-02-10T19:57:45.346Z",
+                "hmac_verified": false,
+                "pubsub_token": "6EAUXHSWqqCRHuTDhV8Wkgob"
+              },
+              "id": 302,
+              "inbox_id": 4,
+              "messages": [
+                {
+                  "id": 10754,
+                  "content": null,
+                  "account_id": 2,
+                  "inbox_id": 4,
+                  "conversation_id": 302,
+                  "message_type": 0,
+                  "created_at": 1770753466,
+                  "updated_at": "2026-02-10T19:57:46.250Z",
+                  "private": false,
+                  "status": "sent",
+                  "source_id": "wamid.HBgNNTUxMTkyMjMwMjUwNhUCABIYIEFDM0RBQkZFMEY5MzQzMEUzMUIxNUUzNjY0RkY5ODEzAA==",
+                  "content_type": "text",
+                  "content_attributes": {},
+                  "sender_type": "Contact",
+                  "sender_id": 343,
+                  "external_source_ids": {},
+                  "additional_attributes": {},
+                  "processed_message_content": null,
+                  "sentiment": {},
+                  "conversation": {
+                    "assignee_id": null,
+                    "unread_count": 1,
+                    "last_activity_at": 1770753466,
+                    "contact_inbox": {
+                      "source_id": "5511922302506"
+                    }
+                  },
+                  "attachments": [
+                    {
+                      "id": 1956,
+                      "message_id": 10754,
+                      "file_type": "audio",
+                      "account_id": 2,
+                      "extension": null,
+                      "data_url": "https://chat.tivas.com.br/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBck1IIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--f1d69dcd2131394bd0dce0b39513cb0941814b41/File.ogg",
+                      "thumb_url": "",
+                      "file_size": 2581,
+                      "width": null,
+                      "height": null,
+                      "transcribed_text": ""
+                    }
+                  ],
+                  "sender": {
+                    "additional_attributes": {},
+                    "custom_attributes": {},
+                    "email": null,
+                    "id": 343,
+                    "identifier": null,
+                    "name": "Orlando",
+                    "phone_number": "+5511922302506",
+                    "thumbnail": "",
+                    "blocked": false,
+                    "type": "contact"
+                  }
+                }
+              ],
+              "labels": [],
+              "meta": {
+                "sender": {
+                  "additional_attributes": {},
+                  "custom_attributes": {},
+                  "email": null,
+                  "id": 343,
+                  "identifier": null,
+                  "name": "Orlando",
+                  "phone_number": "+5511922302506",
+                  "thumbnail": "",
+                  "blocked": false,
+                  "type": "contact"
+                },
+                "assignee": null,
+                "team": null,
+                "hmac_verified": false
+              },
+              "status": "pending",
+              "custom_attributes": {},
+              "snoozed_until": null,
+              "unread_count": 1,
+              "first_reply_created_at": null,
+              "priority": null,
+              "waiting_since": 1770753465,
+              "agent_last_seen_at": 0,
+              "contact_last_seen_at": 0,
+              "last_activity_at": 1770753466,
+              "timestamp": 1770753466,
+              "created_at": 1770753465,
+              "updated_at": 1770753466.2539258
+            },
+            "created_at": "2026-02-10T19:57:46.250Z",
+            "id": 10754,
+            "inbox": {
+              "id": 4,
+              "name": "WABA Agent"
+            },
+            "message_type": "incoming",
+            "private": false,
+            "sender": {
+              "account": {
+                "id": 2,
+                "name": "TRS Jurídico"
+              },
+              "additional_attributes": {},
+              "avatar": "",
+              "custom_attributes": {},
+              "email": null,
+              "id": 343,
+              "identifier": null,
+              "name": "Orlando",
+              "phone_number": "+5511922302506",
+              "thumbnail": "",
+              "blocked": false
+            },
+            "source_id": "wamid.HBgNNTUxMTkyMjMwMjUwNhUCABIYIEFDM0RBQkZFMEY5MzQzMEUzMUIxNUUzNjY0RkY5ODEzAA==",
+            "attachments": [
+              {
+                "id": 1956,
+                "message_id": 10754,
+                "file_type": "audio",
+                "account_id": 2,
+                "extension": null,
+                "data_url": "https://chat.tivas.com.br/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBck1IIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--f1d69dcd2131394bd0dce0b39513cb0941814b41/File.ogg",
+                "thumb_url": "",
+                "file_size": 2581,
+                "width": null,
+                "height": null,
+                "transcribed_text": ""
+              }
+            ],
+            "event": "message_created"
+          },
+          "webhookUrl": "https://n8n.tivas.com.br/webhook/chatwoot-trs",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "30e7c07b-0ffa-4b60-b190-42d21460d34c",
+  "activeVersionId": "30e7c07b-0ffa-4b60-b190-42d21460d34c",
+  "versionCounter": 45,
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-11T00:29:46.066Z",
+      "createdAt": "2025-11-11T00:29:46.066Z",
+      "role": "workflow:owner",
+      "workflowId": "o7HJFuZZqJMcWyv5",
+      "projectId": "W8sWcqcBrkOu1smK",
+      "project": {
+        "updatedAt": "2025-06-09T13:58:57.074Z",
+        "createdAt": "2025-06-09T13:56:10.068Z",
+        "id": "W8sWcqcBrkOu1smK",
+        "name": "Guilherme Pereira <guidu.projects+moliver@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "9b483db9-4235-4a16-af1b-27d1fed8b1a7"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 30e7c07b",
+    "description": ""
+  }
+}

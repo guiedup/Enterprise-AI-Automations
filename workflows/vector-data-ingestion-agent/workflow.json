@@ -1,0 +1,1061 @@
+{
+  "updatedAt": "2025-09-28T13:22:20.000Z",
+  "createdAt": "2025-07-24T19:54:18.246Z",
+  "id": "D3OZwZfpe9RikVRj",
+  "name": "Agente vetorizador",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -768,
+        -80
+      ],
+      "id": "1c079570-931a-428c-90eb-87356e269209",
+      "name": "When chat message received",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        960,
+        336
+      ],
+      "id": "ee48f3e1-a9ee-4657-a128-092b2f25e458",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        544
+      ],
+      "id": "9129d48d-f00b-46c1-bbce-f92758a85d06",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "gLeG8ecfI823nEG4",
+          "name": "My Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Insira novas informações relevantes ditas pelo usuário na base vetorial Supabase, utilizando embeddings.\nUse esta ferramenta quando o usuário fornecer conhecimento novo ou quiser salvar algo importante.",
+        "workflowId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "Inserir Supabase Vector"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        336
+      ],
+      "id": "4c75b8cb-721e-48e4-84b8-26705fd456ba",
+      "name": "Inserir info no Supabase"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Recupere da memória qualquer informação que o usuário já tenha ensinado antes.\nUse sempre, a cada mensagem automaticamente\nNunca mencione o banco de dados ou o Supabase.\nFale de forma natural, como se estivesse lembrando do que o usuário disse.\nSe não encontrar nada, diga que ainda não aprendeu aquilo.",
+        "tableName": {
+          "__rl": true,
+          "value": "matchable_documentos",
+          "mode": "list",
+          "cachedResultName": "matchable_documentos"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        2000,
+        336
+      ],
+      "id": "346fcab8-5229-4a0e-a9ef-cbe77e95581f",
+      "name": "Consultar Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use esta ferramenta quando quiser corrigir ou atualizar uma informação já registrada no Supabase.\nEla precisa do ID do vetor, que pode ser recuperado via consulta anterior.",
+        "workflowId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "Alterar info no Supabase"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID', ``, 'string') }}",
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2320,
+        336
+      ],
+      "id": "e4bf0e7f-0315-437d-83b5-76f4a88fa53b",
+      "name": "Alterar info no Supabase"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.ID }}",
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        48
+      ],
+      "id": "53780548-f141-41c6-9615-57aad674d2a4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        336
+      ],
+      "id": "9d6ec576-c1ad-42bb-8823-3362a39d8fb0",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec7314d2-547d-43f3-85d0-48148b792097",
+              "name": "Texto",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "16977afb-1e10-430e-bc69-264081cc949a",
+              "name": "ID",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        -80
+      ],
+      "id": "8bd78600-8571-4767-a822-1c3c6d885442",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "tblAgent1",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "keyValue": "={{ $('Edit Fields').item.json.ID }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -80
+      ],
+      "id": "32985577-00c4-4b6c-8502-67c234ab7156",
+      "name": "Verificar se esse chat ja tem registro",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "tableId": "tblAgent1",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "chat_id",
+              "fieldValue": "={{ $('Edit Fields').item.json.ID }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -80
+      ],
+      "id": "914318b0-3cba-44ee-9489-774828be3b34",
+      "name": "Cria registro",
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tblAgent1",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.chat_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "mode",
+              "fieldValue": "treino"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "0e297f52-0e8f-4c0d-b5ad-8c820b05575f",
+      "name": "Mudar para modo treino",
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tblAgent1",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.chat_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "mode",
+              "fieldValue": "teste"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        320
+      ],
+      "id": "c9b2d2d5-faf6-4d50-8122-e9a59553221f",
+      "name": "Mudar para modo teste",
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Edit Fields').item.json.Texto }}",
+                    "rightValue": "/teste",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0bb00274-a8f0-4bf5-99e8-0e7ab482d8af"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Teste"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c69d98b0-9006-4d34-a366-3d756cafb41a",
+                    "leftValue": "={{ $('Edit Fields').item.json.Texto }}",
+                    "rightValue": "/treino",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Treino"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b035ac60-d8db-4f85-be81-2d04f22b9f9a",
+                    "leftValue": "={{ $('Edit Fields').item.json.Texto }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sem alteração"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        144,
+        0
+      ],
+      "id": "a395c0f8-b6d2-4d9f-b962-681dd7b4a23e",
+      "name": "Verificar alteração de modo de agente"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mode }}",
+                    "rightValue": "treino",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a278f7f6-b0c7-492a-9b8a-31ce2c30717a"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Treino"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "44d25eb3-3715-44e1-a70d-b4ef5b78d8b9",
+                    "leftValue": "={{ $json.mode }}",
+                    "rightValue": "teste",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Teste"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        144
+      ],
+      "id": "9ea96118-bafb-4990-89a2-d5bafb005b2c",
+      "name": "Modo atual"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.Texto }}",
+        "options": {
+          "systemMessage": "=Você é uma IA treinadora de IAs, expert em engenharia de prompt e gerenciamento de IAs.\n\nSeu trabalho é **gerenciar o que o usuário diz** e decidir **o que deve ser usado** para uma bom prompt system ou para um RAG. Você tem sede de entender o que o usuário quer e tem curiosidade, para poder treinar a IA de forma completa, com informações construtivas para o treinamento, ajudando o usuario.\n\nSempre gere perguntas sobre a IA que o usuário quer, como objetivo dela, o que ela precisa saber.\n\n### OBJETIVO:\n\n1. **Entender o que foi dito**.\n2. **Classificar** se aquilo é um:\n   - **Fato ou conhecimento que a IA precisa saber**  \n     → Use a tool `registrar_na_IA_KNOW`\n   - **Comportamento que a IA deve seguir**  \n     → Use a tool `registrar_na_IA_FEEL`\n\n---\n\n### 🔍 COMO FUNCIONA SUA CLASSIFICAÇÃO:\n\n1. Use `registrar_na_IA_KNOW` somente quando o usuário disser algo que a IA precisa **lembrar e responder depois**, ideias para vetorizar e consultar em RAG, como:\n- Valores, nomes, datas, horários, endereços, descrições, perguntas com respostas, exemplos prontos, informações de contato, etc.\n\n2. Use `registrar_na_IA_FEEL` somente quando o usuário disser algo que define **como a IA deve se comportar ou responder**, ideais para informar no system prompt, como:\n- Tom de voz, ser mais formal ou informal, frases proibidas, instruções sobre erros, tratativa, ser resumido ou detalhado, humor, entre outros.\n\nVocê deve **tomar a decisão sozinha**. Não pergunte ao usuário qual tool usar.  \nVocê é a especialista em treinar IAs, e sabe exatamente para onde enviar cada informação.\n\n---\n\n### 🚫 NUNCA FAÇA ISSO:\n\n- Nunca registre você mesma: sempre use as tools.\n- Nunca diga que vai “vetorizar”, “salvar no Supabase” ou usar linguagem técnica.\n- Nunca peça para o usuário escolher se é KNOW ou FEEL.\n- Nunca diga que vai salvar em memória, banco ou algo do tipo.\n\n---\n\n### ✅ SEMPRE FAÇA ISSO:\n\n1. Use sempre as ferramentas (`registrar_na_IA_KNOW` ou `registrar_na_IA_FEEL`), sem exceção.\n2. Explique com educação e leveza o que você está fazendo, com frases como:\n  - “Perfeito, vou guardar isso como uma informação importante.”\n  - “Legal! Já anotei esse comportamento para a IA seguir.”\n3. Mantenha o tom amigável, leve e inteligente.\n4. Crie listas de perguntas interessantes para serem vetorizadas com a resposta do usuário, como um formulário infinito:\n  - Nome da pessoa, nome da empresa, nome da IA, registros, valores, tabelas, regras, leis...\n\n---\n\n### 🧠 EXEMPLOS\n\n**Usuário:** \"O valor da mensalidade é R$350\"  \n➡️ Use `registrar_na_IA_KNOW`  \n🗣️ “Anotado! Agora a IA já sabe o valor da mensalidade.\nBaseado nisso, me fale mais:\n- Quais os métodos de pagamento?\n- O que incluí na mensalidade?\n...”\n\n**Usuário:** \"Quero que ela seja mais divertida e use emojis\"  \n➡️ Use `registrar_na_IA_FEEL`  \n🗣️ “Legal! Já ensinei isso pra ela, vai responder com mais emojis agora.\nBaseado nisso, me fale mais:\n- Ela vai ser bem humorada ou mais séria?\n- Qual nome que deseja que a IA tenha\n...”\n\n---\n\n### 📌 REGRAS DE OURO\n\n- KNOW = conteúdo, dados, respostas, informações.\n- FEEL = comportamento, tom, estilo, instruções sobre como falar.\n- Você decide, com autonomia.\n- Sempre salve. Sempre evolua. Sempre pergunte se o usuário quer revisar.\n- Tenha interesse e curiosidade em criar uma IA ideal para o usuário.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        1376,
+        -80
+      ],
+      "id": "fd6ebaab-509b-426c-ace6-606bdaa08dcd",
+      "name": "AI Treinador"
+    },
+    {
+      "parameters": {
+        "toolDescription": "AI KNOW, responsável pela criação do RAG.",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "=Você é uma IA organizadora de conhecimento.\n\nSeu trabalho é **vetorizar informações** que o usuário compartilhar, para servir de consulta para uma IA feita sobe medida.\n\n---\n\n### 🧠 O que você deve fazer:\n\n1. Editar a informação para que a consulta dela em uma base vetorizada seja efetiva.\n\n2. Use a tool `Inserir info no Supabase` sempre que receber uma **informação clara e objetiva**, como:\n  - Nomes\n  - Datas\n  - Preços\n  - Endereços\n  - Tabelas\n  - Instruções\n  - Respostas para dúvidas frequentes\n  - Qualquer outro conhecimento útil\n\n3. Pense com cuidado antes de salvar. Use a tool `Think` quando tiver dúvidas.\n\n4. Salve o conteúdo no formato mais simples e direto possível.\n\n---\n\n### Tools Disponiveis:\n- Use as tools para a base esteja sempre organizada.\n1. Consultar supabase.\n2. Alterar info no supabase.\n3. Inserir info no supabase.\n- Ou seja, use e abuse delas para evitar informações duplicadas ou desatualizadas, seja organizada nesse dever.\n\n### ⚠️ Regras obrigatórias:\n\n- Nunca responda com explicações. Sua função é apenas salvar.\n- Nunca diga que vai salvar — apenas salve usando a ferramenta.\n- Sempre use uma das ferramentas disponíveis para salvar ou decidir.\n- Nunca deixe de usar uma tool.\n- Padronize os dados salvos de forma clara para fácil uso futuro.\n\n---\n\n### ✅ Exemplo:\n\n**Entrada do usuário:**  \n“O telefone da loja é (11) 99999-8888”\n\n➡️ Você deve salvar:\n\n**Tool:** salvar_em_base_IA_KNOW  \n**Valor salvo:**  \n`Telefone da loja: (11) 99999-8888`\n",
+          "maxIterations": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1904,
+        128
+      ],
+      "id": "ea1de1eb-14c8-418b-b1e3-58cb42260feb",
+      "name": "AI KNOW"
+    },
+    {
+      "parameters": {
+        "toolDescription": "AI FEEL, a sua engenheira de prompt.\nUse ela quando for necessário alterar a ou adicionar fatores comportamentais da IA do usuário através do system message.",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "=Você é uma IA engenheira de prompt.\n\nSeu papel é **criar e atualizar o prompt system para uma IA**, com base nas instruções comportamentais que o usuário fornecer.\n\n---\n\n### 🎯 SUA TAREFA:\n\nAjustar o **comportamento da IA principal**.  \nVocê deve:\n\n1. Entender o que precisa ser mudado\n2. Atualizar o prompt system com as novas diretrizes\n3. Enviar apenas o novo prompt system formatado\n4. Usar a tool \"Update a row in Supabase\" quando precisar salvar o novo prompt system atualizado.\n\nQuando o usuário disser algo sobre **modo de falar**, **tom**, **forma de agir**, **uso de emojis**, **frases proibidas**, ou **regras de conduta**, \n---\n\n### 🧩 O prompt system final deve conter:\n\n1. **Objetivo**: O que a IA deve fazer.\n2. **Contexto**: Onde, para quem ou em que situação ela atua.\n3. **Parâmetros**: Como ela deve se comportar (ex: \"usar emojis\", \"falar de forma direta\", etc).\n4. **Restrições**: O que **não pode** fazer ou dizer.\n\n---\n\n### ⚠️ REGRAS ESSENCIAIS:\n\n- **Nunca responda com explicação**. Apenas envie o novo prompt system.\n- Sempre use a ferramenta `Update a row in Supabase` para salvar.\n- Use a tool `Think` quando precisar raciocinar antes de atualizar.\n- Use linguagem clara, natural e humana.\n- Sempre use uma das 4 tools disponíveis.\n- Nunca ignore uma instrução do usuário. Sempre processe.\n\n---\n\n### ✅ Exemplo de estrutura final esperada (como resposta):\n\n```txt\nObjetivo: Responder dúvidas dos clientes sobre o serviço.\n\nContexto: Atendimento via WhatsApp para uma empresa de cursos online.\n\nParâmetros: Falar com simpatia, sempre usar emojis educativos. Ser breve e gentil. Corrigir erros de digitação do usuário de forma educada.\n\nRestrições: Nunca dizer que é uma IA. Nunca usar emojis de tristeza.\n```\n\n### PROMPT SYSTEM ATUAL QUE PRECISARÁ SER ATUALIZADO\n\n\"{{ $('Verificar se esse chat ja tem registro').item.json.system }}\"\n",
+          "maxIterations": 1,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        128
+      ],
+      "id": "a8d4c9ff-7741-4404-b29a-6924470a8d5e",
+      "name": "AI FEEL"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tblAgent1",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chat_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Edit Fields').item.json.ID }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "system",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', `Local para salvar o novo \"system prompt\" da IA a ser criada`, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        336
+      ],
+      "id": "f93030ab-35ae-4b7b-9b27-729d8fe4c730",
+      "name": "Update a row in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "={{ $('Verificar se esse chat ja tem registro').item.json.system }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -320,
+        400
+      ],
+      "id": "e72e56f9-5b2a-47d5-854d-c201599dc807",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3-70b-8192",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        608
+      ],
+      "id": "8929cb04-01ba-4a5c-a710-505be2994ed5",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "iTxrnwOfaLxREDNI",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.chat_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        608
+      ],
+      "id": "9c8e7530-e8a8-441a-a3d6-9a7ee1daf432",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Conhecimento profundo vetorizado livre para consulta, use e abuse",
+        "tableName": {
+          "__rl": true,
+          "value": "documentos",
+          "mode": "list",
+          "cachedResultName": "documentos"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        608
+      ],
+      "id": "66c88856-1403-4d25-a9e9-af8dd85b097e",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "0s7j9khUa6ULmTvC",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        16,
+        752
+      ],
+      "id": "b2e3c78a-05ae-4ef8-b3cd-8ef282a1ab10",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "gLeG8ecfI823nEG4",
+          "name": "My Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        48
+      ],
+      "id": "c7de94ff-8600-4ab3-96f1-deb1e45701d6",
+      "name": "Calculator"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI FEEL",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI KNOW",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Consultar Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserir info no Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI KNOW",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI KNOW",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alterar info no Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI KNOW",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI KNOW",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI FEEL",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Treinador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Cria registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se esse chat ja tem registro": {
+      "main": [
+        [
+          {
+            "node": "Verificar alteração de modo de agente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Cria registro": {
+      "main": [
+        [
+          {
+            "node": "Verificar se esse chat ja tem registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mudar para modo treino": {
+      "main": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar alteração de modo de agente": {
+      "main": [
+        [
+          {
+            "node": "Mudar para modo teste",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mudar para modo treino",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Modo atual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modo atual": {
+      "main": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Treinador": {
+      "main": [
+        []
+      ]
+    },
+    "AI KNOW": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI FEEL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row in Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI FEEL",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mudar para modo teste": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Treinador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ecd81c96-0289-479b-9712-3715aea53494",
+  "activeVersionId": "ecd81c96-0289-479b-9712-3715aea53494",
+  "versionCounter": 13,
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T05:13:43.264Z",
+      "createdAt": "2025-08-03T05:13:43.264Z",
+      "id": "HQmWyDGAHoRvhM72",
+      "name": "test"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2025-07-24T19:54:18.253Z",
+      "createdAt": "2025-07-24T19:54:18.253Z",
+      "role": "workflow:owner",
+      "workflowId": "D3OZwZfpe9RikVRj",
+      "projectId": "W8sWcqcBrkOu1smK",
+      "project": {
+        "updatedAt": "2025-06-09T13:58:57.074Z",
+        "createdAt": "2025-06-09T13:56:10.068Z",
+        "id": "W8sWcqcBrkOu1smK",
+        "name": "Guilherme Pereira <guidu.projects+moliver@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "9b483db9-4235-4a16-af1b-27d1fed8b1a7"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

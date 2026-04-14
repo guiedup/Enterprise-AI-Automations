@@ -1,0 +1,2997 @@
+{
+  "updatedAt": "2026-04-14T12:16:43.000Z",
+  "createdAt": "2026-04-14T12:16:43.153Z",
+  "id": "Hbr6rxa0WYl3FTOp",
+  "name": "Periodic Data Anomaly Analyzer",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analise se houve algum problema nos últimos 30 minutos.\nHorário final: {{ $json.agora_no_fuso }}\nHorário inicial: {{ DateTime.fromISO($json.agora_no_fuso, { setZone: true }).minus({ minutes: 30 }).toISO() }}\nO filtro precisa ser feito entre esses 2 horarios.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Use the data source query tool to check for operational metrics, system health, production data, and anomalies.\nResponda sempre em Portugues Brasil.\nNão informe na sua resposta que as informações foram extraídas do supabase. Use o filtro na coluna \"last_connected_at\" com a linguagem postgRest. \nExemplo: last_connected_at=eq.YYYY-MM-DD, last_connected_at=gt.YYYY-MM-DD, last_connected_at=lt.YYYY-MM-DD, etc. Nas suas respostas use até 4 mil caracteres e responda por extenso de forma resumida.\n\n# Informações importantes da tool\n1. The dataset includes system identification in the 'entityName' column. \nA Total output is recorded in the 'output_kwh' column. A Expected output is in the 'expected_output_kWh' column. \nIndividual component data is available in the 'components' column. \nComponent temperatures are in the 'MaxTemp' field; normal operating range is below 80°C. Acima de 80 graus celsius, já pode indicar overheating. \nO campo 'last_connected_at' indica quando foi a última vez que o equipment comunicou. \nO campo 'last_power_reading' indica qual é a active power da última leitura. \nSe 'last_power_reading' for zero ou null pode indicar que o equipment estava zerado sem produzir. \nPerformance ratios below 70% are considered low, and readings above 90% may indicate sensor calibration issues or input data anomalies.\nValores registrados como 'none' é ausência de informação e pode indicar falha de comunicação. \n2. Liste quais componentes estão com a potencia ativa 'last_power_reading' zero.\n3. Liste quais componentes estão com a performance ratio abaixo de 70%.\n4. Liste quais componentes estão temperaturas acima de 80 graus.\n5. Liste quais componentes estão que não comunicaram há mais de 30 minutos.\n6. SEMPRE informe o nome da entity e do component que encontrou problemas (Coluna 'entityName').\n\nResponda em formato json com campos \"hasProblem\", que seria campo de true ou false para se teve ou não problemas encontrados, e \"whichProblem\" com o problema que foi encontrado. Use a coluna \"noProblemFound\" quando não encontrar problemas, com justificativa."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        320
+      ],
+      "id": "393f4969-35ca-4150-8e63-5ba2745a9a35",
+      "name": "AI Agent2",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "maxTokensToSample": 3800,
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        800,
+        752
+      ],
+      "id": "056f841b-d57c-4a98-9602-7544c8512b11",
+      "name": "Groq Chat Model"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        992,
+        608
+      ],
+      "id": "20b9d500-4f44-4293-85ad-a7e0413097a7",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        608
+      ],
+      "id": "a7cfb92b-c0ac-4f8c-81d8-46dda19e3428",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "={{ $('Select clientes from client_group_telegram').item.json.client }}",
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "filterType": "string",
+        "filterString": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filters__String_', `style postgRest`, 'string') }}"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        608
+      ],
+      "id": "a968183b-2014-4dfe-a5e3-a46e721f02d8",
+      "name": "GetDataSource"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"hasProblem\": true,\n\t\"detectedAnomalies\": \"System disconnected\",\n    \"noProblemFound\": \"Sem componentes com potencia zero, sem componentes com overheating, sem componentes com baixas performances\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        608
+      ],
+      "id": "e7e3d8aa-f97e-4443-8e13-d0af4b049508",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "chatId": "[CHAT_ID_REMOVED]",
+        "text": "={{ $json.detectedAnomalies.replaceAll('_',' ') }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2096,
+        768
+      ],
+      "id": "7cf51762-03b2-44c7-b56b-821cd1472ab8",
+      "name": "Notification_Handler4",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Para cada cliente').item.json.telegram_supergroup_id}}",
+        "text": "={{ $('AI Agent2').item.json.output.detectedAnomalies.replaceAll('_','-') }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2320,
+        768
+      ],
+      "id": "16251e32-37a6-4936-b974-5471aa7d0ae7",
+      "name": "Custom_Group_MSG1",
+      "webhookId": "[WEBHOOK_ID_REMOVED]",
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "{{ $('Loop Over Items').item.json.telegram_supergroup_id}}",
+        "text": "=Falha no loop",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2560,
+        1088
+      ],
+      "id": "9a82fbb6-68e6-4726-9757-e72c5f416eda",
+      "name": "Notification_Handler5",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[CHAT_ID_REMOVED]",
+        "text": "=Falha no loop",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1968,
+        416
+      ],
+      "id": "1d0fb39c-9176-4958-b3c5-f24dacda34da",
+      "name": "Notification_Handler6",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Para cada cliente').item.json.telegram_supergroup_id}}",
+        "text": "=Loop Executado, {{ $json.noProblemFound }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1936,
+        1024
+      ],
+      "id": "47a5139e-57df-494c-be5a-30d45a3cb2cd",
+      "name": "Notification_Handler7",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[CHAT_ID_REMOVED]",
+        "text": "=Cliente: {{ $('Select clientes from client_group_telegram').item.json.client.replaceAll('_',' ') }}\n\nJustificativa No Problem: {{ $('AI Agent2').item.json.output.noProblemFound.replaceAll('_',' ') }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2144,
+        1024
+      ],
+      "id": "00070eaf-159b-48c0-a366-d731f874370c",
+      "name": "Envio Justificativa Sem Problema encontrado.1",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3f5549b3-d756-49b7-a3ae-0883f8a47255",
+              "leftValue": "={{ $json.hasProblem }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1856,
+        784
+      ],
+      "id": "ac949f75-a853-437d-af0e-d83e3bf715c0",
+      "name": "Se tem problema"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            },
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        208
+      ],
+      "id": "4cd97ea0-de09-4141-be2b-74543e43ee17",
+      "name": "A cada 30 min"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e930a9b1-7d94-4150-a90c-acdb3e5e5b30",
+              "leftValue": "={{ parseInt($json.Hour) }}",
+              "rightValue": 8,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "a5964ebb-4d96-4f4d-86a3-0ee49bbf25c6",
+              "leftValue": "={{ parseInt($json.Hour) }}",
+              "rightValue": 19,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        208
+      ],
+      "id": "b3210efa-f097-46ad-b139-12e9947b642a",
+      "name": "Se entre 8h e 19h"
+    },
+    {
+      "parameters": {
+        "chatId": "[CHAT_ID_REMOVED]",
+        "text": "Fora de hora.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1296,
+        576
+      ],
+      "id": "7b7d482f-f84d-4bb7-9570-2c30d2367d1c",
+      "name": "Enviar mensagem \"Fora de hora.\"",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        432,
+        192
+      ],
+      "id": "f33422a6-d9af-41ea-8c3f-41f20f4a70bf",
+      "name": "Para cada cliente"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        176
+      ],
+      "id": "c2cdfa1b-e0ba-433c-b238-96c55e99efd4",
+      "name": "Esperar 1 seg",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblAnalisePeriodica",
+          "cachedResultUrl": "/projects/D4DznLFvmSLYwSyy/datatables/lZS13UWDerNWz2py"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hasProblem": "={{ $json.output.hasProblem }}",
+            "detectedAnomalies": "={{ $json.output.detectedAnomalies }}",
+            "noProblemFound": "={{ $json.output.noProblemFound }}",
+            "Workflow": "={{ $workflow.id }}",
+            "Cliente": "={{ $('Para cada cliente').item.json.client }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Cliente",
+              "displayName": "Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hasProblem",
+              "displayName": "hasProblem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "detectedAnomalies",
+              "displayName": "detectedAnomalies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "noProblemFound",
+              "displayName": "noProblemFound",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        320
+      ],
+      "id": "2cc4f2fb-d21c-4fca-ab2d-e5951c226ce9",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "content": "## É até as 20h mesmo ou até as 19h?",
+        "height": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "da2668b4-74aa-41a6-b7c3-3dea61d0dc4b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblAnalisePeriodica",
+          "cachedResultUrl": "/projects/D4DznLFvmSLYwSyy/datatables/lZS13UWDerNWz2py"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        560
+      ],
+      "id": "de4eff38-aae2-40fa-8ff9-fc394f43b707",
+      "name": "Get row(s)",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "compression": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        544
+      ],
+      "id": "319b23d9-f292-412d-94a8-ad464ad21355",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "[CHAT_ID_REMOVED]",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "=Relatório de análise periódicas {{ $('A cada 30 min').item.json['Day of month'] }}-{{ $('A cada 30 min').item.json.Month }}-{{ $('A cada 30 min').item.json.Year }}.xlsx "
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        544
+      ],
+      "id": "3ae07c0e-e543-4ab0-869e-71910063c5e7",
+      "name": "Send a document",
+      "webhookId": "[WEBHOOK_ID_REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b51203e3-d308-4df4-95e4-a9a65ed5bfdf",
+              "leftValue": "={{ parseInt($('A cada 30 min').item.json.Hour) }}",
+              "rightValue": 20,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "71aac274-bf89-4cf7-9a60-270fe5d1d8f5",
+              "leftValue": "={{ $('A cada 30 min').item.json.Minute }}",
+              "rightValue": "00",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -992,
+        576
+      ],
+      "id": "40500965-c8b8-42bc-84d8-9e0ddb0ec617",
+      "name": "Se 20h00"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "[SECRET_REMOVED]",
+          "mode": "list",
+          "cachedResultName": "tblAnalisePeriodica",
+          "cachedResultUrl": "/projects/D4DznLFvmSLYwSyy/datatables/lZS13UWDerNWz2py"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        544
+      ],
+      "id": "7d0b41bd-305b-41d4-8cbe-8604b84b1d85",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "content": "## Relatório diário de produção",
+        "height": 288,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        480
+      ],
+      "id": "35f56740-f2d1-4cc2-8be0-31a928595fa1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "client_group_telegram",
+          "mode": "list",
+          "cachedResultName": "client_group_telegram"
+        },
+        "returnAll": true,
+        "sort": {
+          "values": [
+            {
+              "column": "client"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        128,
+        192
+      ],
+      "id": "277da33f-41fa-4ff4-b1db-426cfc5107a5",
+      "name": "Select clientes from client_group_telegram"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "={{ $('Select clientes from client_group_telegram').item.json.client }}",
+          "mode": "name"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "=last_connected_at",
+              "condition": "IS NOT NULL"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "=last_connected_at",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        640,
+        304
+      ],
+      "id": "bb51abe0-523f-46ce-a448-8d90b5a7149e",
+      "name": "Select clientes timezone from each table"
+    },
+    {
+      "parameters": {
+        "jsCode": "const lastConnected = $input.first().json.last_connected_at;\n\n// 1. Extrai o offset exato da string (ex: -04:00)\nconst dt = DateTime.fromISO(lastConnected, { setZone: true });\nconst offsetOriginal = dt.zoneName; // Isso retornará \"UTC-4\" ou similar\n\n// 2. Aplica esse fuso específico ao horário atual\nconst agoraNoMesmoFuso = $now.setZone(offsetOriginal);\n\nreturn {\n  original: lastConnected,\n  fuso_detectado: offsetOriginal,\n  agora_no_fuso: agoraNoMesmoFuso.toISO(), // Formato ISO completo\n  agora_formatado: agoraNoMesmoFuso.toFormat('yyyy-MM-dd HH:mm:ss') // Opcional\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        320
+      ],
+      "id": "f88682d4-b253-4c5e-b47e-240981dfd74d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "operation": "getAll",
+        "tableId": "client_dataset_a",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "last_connected_at",
+              "condition": "gt",
+              "keyValue": "2026-03-23T16:00:57.121-03:00"
+            },
+            {
+              "keyName": "last_connected_at",
+              "condition": "lt",
+              "keyValue": "2026-03-23T16:30:57.121-03:00"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        144
+      ],
+      "id": "166e5216-bb34-4394-91df-0bc8d76954bd",
+      "name": "Get many rows",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "__CUSTOM_API_CALL__"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        128
+      ],
+      "id": "04008045-8d2e-45cc-ad55-493f14659c54",
+      "name": "Supabase"
+    }
+  ],
+  "connections": {
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetDataSource": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification_Handler4": {
+      "main": [
+        [
+          {
+            "node": "Custom_Group_MSG1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Custom_Group_MSG1": {
+      "main": [
+        [
+          {
+            "node": "Para cada cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notification_Handler5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification_Handler5": {
+      "main": [
+        [
+          {
+            "node": "Para cada cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification_Handler7": {
+      "main": [
+        [
+          {
+            "node": "Envio Justificativa Sem Problema encontrado.1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envio Justificativa Sem Problema encontrado.1": {
+      "main": [
+        [
+          {
+            "node": "Para cada cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se tem problema": {
+      "main": [
+        [
+          {
+            "node": "Notification_Handler4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notification_Handler7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A cada 30 min": {
+      "main": [
+        [
+          {
+            "node": "Se entre 8h e 19h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se entre 8h e 19h": {
+      "main": [
+        [
+          {
+            "node": "Select clientes from client_group_telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar mensagem \"Fora de hora.\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem \"Fora de hora.\"": {
+      "main": [
+        [
+          {
+            "node": "Se 20h00",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Para cada cliente": {
+      "main": [
+        [
+          {
+            "node": "Esperar 1 seg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Select clientes timezone from each table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Se tem problema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a document": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se 20h00": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select clientes from client_group_telegram": {
+      "main": [
+        [
+          {
+            "node": "Para cada cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select clientes timezone from each table": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "A cada 30 min": [
+      {
+        "json": {
+          "timestamp": "2026-04-06T14:30:04.005-03:00",
+          "Readable date": "April 6th 2026, 2:30:04 pm",
+          "Readable time": "2:30:04 pm",
+          "Day of week": "Monday",
+          "Year": "2026",
+          "Month": "April",
+          "Day of month": "06",
+          "Hour": "14",
+          "Minute": "30",
+          "Second": "04",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ],
+    "Get row(s)": [
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falhas detectado no período analisado.",
+          "id": 2,
+          "createdAt": "2026-03-18T11:00:50.861Z",
+          "updatedAt": "2026-03-18T11:00:50.861Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component encontrado no intervalo solicitado. Portanto, não há dados disponíveis para indicar problemas.",
+          "id": 3,
+          "createdAt": "2026-03-18T11:00:54.040Z",
+          "updatedAt": "2026-03-18T11:00:54.040Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Na entity Entity_Alpha, os componentes Comp_ID_X e Comp_ID_X apresentaram active power zero (last_power_reading = 0) durante o intervalo analisado. O component Comp_ID_X possui last_power_reading nulo, indicando ausência de leitura. Nenhum component excedeu 80 °C, não houve falha de comunicação superior a 30 minutos e não há dados de performance ratio abaixo de 70 %.",
+          "noProblemFound": "",
+          "id": 4,
+          "createdAt": "2026-03-18T11:00:59.127Z",
+          "updatedAt": "2026-03-18T11:00:59.127Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum dado encontrado no intervalo especificado. Portanto, não há problemas identificados.",
+          "id": 5,
+          "createdAt": "2026-03-18T11:01:02.968Z",
+          "updatedAt": "2026-03-18T11:01:02.968Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Zero active power detected in several components: Entity_Beta Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y. Performance ratio below 70% observed in: Entity_Gamma_2 (Comp_ID_Y2, Comp_ID_Y3), Entity_Gamma_4 (Comp_ID_Y, Comp_ID_Y), Entity_Delta_1 (Comp_ID_Y, Comp_ID_Y), Entity_Delta_2 (Comp_ID_Y), Entity_Delta_3 (Comp_ID_Y), Entity_Epsilon (Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y). No components exceeded 80°C, and all communicated within the last 30 minutes.",
+          "noProblemFound": "",
+          "id": 6,
+          "createdAt": "2026-03-18T11:01:10.918Z",
+          "updatedAt": "2026-03-18T11:01:10.918Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component encontrado no período especificado (2026-03-18 07:31:19 a 08:01:19). Portanto, não há dados para avaliar potencia ativa, performance ratio, temperatura ou comunicação. Não foram identificados problemas.",
+          "id": 7,
+          "createdAt": "2026-03-18T11:01:22.746Z",
+          "updatedAt": "2026-03-18T11:01:22.746Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou estado de componentes foi encontrado no intervalo solicitado (2026-03-18 07:31:24 a 08:01:24). Portanto, não há dados para identificar potenciais problemas.",
+          "id": 8,
+          "createdAt": "2026-03-18T11:01:30.186Z",
+          "updatedAt": "2026-03-18T11:01:30.186Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado nos últimos 30 minutos, portanto não há problemas identificados.",
+          "id": 9,
+          "createdAt": "2026-03-18T11:30:48.858Z",
+          "updatedAt": "2026-03-18T11:30:48.858Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha foi encontrado nos últimos 30 minutos entre 2026-03-18T08:00:58.425-03:00 e 2026-03-18T08:30:58.425-03:00. Todos os equipments estavam operando normalmente ou não há dados disponíveis para esse intervalo.",
+          "id": 10,
+          "createdAt": "2026-03-18T11:31:00.302Z",
+          "updatedAt": "2026-03-18T11:31:00.302Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Comp_ID_X (Entity_Alpha) com active power zero. Comp_ID_X (Entity_Alpha) sem comunicação (last_connected_at null).",
+          "noProblemFound": "",
+          "id": 11,
+          "createdAt": "2026-03-18T11:31:04.817Z",
+          "updatedAt": "2026-03-18T11:31:04.817Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum problema detectado nos últimos 30 minutos.",
+          "id": 12,
+          "createdAt": "2026-03-18T11:31:08.264Z",
+          "updatedAt": "2026-03-18T11:31:08.264Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no intervalo especificado.",
+          "id": 13,
+          "createdAt": "2026-03-18T11:31:15.794Z",
+          "updatedAt": "2026-03-18T11:31:15.794Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component com problemas foi encontrado nos últimos 30 minutos.",
+          "id": 14,
+          "createdAt": "2026-03-18T11:31:19.898Z",
+          "updatedAt": "2026-03-18T11:31:19.898Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de problemas foi identificado nos últimos 30 minutos.",
+          "id": 15,
+          "createdAt": "2026-03-18T11:31:22.694Z",
+          "updatedAt": "2026-03-18T11:31:22.694Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Barbosa: Component Inv1_1_4 e Inv1_1_10 com active power zero e última comunicação em 2025/12/18 e 2024/09/27, Entity_Kappa: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com active power zero ou null e última comunicação em 2026/02/17 ou 2025/10/19, Mococa: components Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_5, Comp_ID_X_6, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4 com active power zero ou null, Padre Bernardo: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com performance ratio abaixo de 70%, Penápolis: vários componentes com dados nulos e última comunicação em 2025/11/14 ou 2025/02/21.",
+          "noProblemFound": "",
+          "id": 16,
+          "createdAt": "2026-03-18T12:01:01.617Z",
+          "updatedAt": "2026-03-18T12:01:01.617Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no período especificado, portanto não há dados para avaliar problemas.",
+          "id": 17,
+          "createdAt": "2026-03-18T12:01:06.246Z",
+          "updatedAt": "2026-03-18T12:01:06.246Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro disponível para o período solicitado; portanto, não foram encontrados problemas.",
+          "id": 18,
+          "createdAt": "2026-03-18T12:01:11.151Z",
+          "updatedAt": "2026-03-18T12:01:11.151Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum dado disponível no intervalo solicitado, portanto não há problemas identificados.",
+          "id": 19,
+          "createdAt": "2026-03-18T12:01:15.441Z",
+          "updatedAt": "2026-03-18T12:01:15.441Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Beta: Comp_ID_Y temperature >80°C; Entity_Gamma 2: Comp_ID_Z, Comp_ID_Z performance ratio <70%; Entity_Gamma 4: Comp_ID_Y performance ratio <70%; Entity_Delta 1: Comp_ID_Z, Comp_ID_Z performance ratio <70%; Entity_Delta 2: Comp_ID_Y performance ratio <70%; Entity_Delta 3: Comp_ID_Z performance ratio <70%; Entity_Lambda: Comp_ID_X_P, Comp_ID_X_H, Comp_ID_X_F not communicated >30 min.",
+          "noProblemFound": "",
+          "id": 20,
+          "createdAt": "2026-03-18T12:01:24.551Z",
+          "updatedAt": "2026-03-18T12:01:24.551Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum dado disponível para o período solicitado. Não foi possível identificar problemas.",
+          "id": 21,
+          "createdAt": "2026-03-18T12:01:28.747Z",
+          "updatedAt": "2026-03-18T12:01:28.747Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos informado. Portanto, não há problemas a relatar.",
+          "id": 22,
+          "createdAt": "2026-03-18T12:01:33.386Z",
+          "updatedAt": "2026-03-18T12:01:33.386Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no período especificado.",
+          "id": 23,
+          "createdAt": "2026-03-18T12:30:50.076Z",
+          "updatedAt": "2026-03-18T12:30:50.076Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos informado.",
+          "id": 24,
+          "createdAt": "2026-03-18T12:30:54.278Z",
+          "updatedAt": "2026-03-18T12:30:54.278Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no intervalo especificado.",
+          "id": 25,
+          "createdAt": "2026-03-18T12:30:58.493Z",
+          "updatedAt": "2026-03-18T12:30:58.493Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component com problemas detectado nos últimos 30 minutos entre 2026-03-18T09:00:59.937-03:00 e 2026-03-18T09:30:59.937-03:00. A consulta retornou dados vazios, indicando que não há dados disponíveis para essa janela de tempo.",
+          "id": 26,
+          "createdAt": "2026-03-18T12:31:01.922Z",
+          "updatedAt": "2026-03-18T12:31:01.922Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha detectado no intervalo solicitado.",
+          "id": 27,
+          "createdAt": "2026-03-18T12:31:10.202Z",
+          "updatedAt": "2026-03-18T12:31:10.202Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha foi encontrado no período solicitado.",
+          "id": 28,
+          "createdAt": "2026-03-18T12:31:14.192Z",
+          "updatedAt": "2026-03-18T12:31:14.192Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum dado registrado nos últimos 30 minutos, portanto não há problemas identificados.",
+          "id": 29,
+          "createdAt": "2026-03-18T12:31:17.392Z",
+          "updatedAt": "2026-03-18T12:31:17.392Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou dados de componentes foi encontrado entre 2026-03-18T09:30:19.961-03:00 e 2026-03-18T10:00:19.961-03:00, portanto não há evidências de problemas nos últimos 30 minutos.",
+          "id": 30,
+          "createdAt": "2026-03-18T13:00:22.387Z",
+          "updatedAt": "2026-03-18T13:00:22.387Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha foi encontrado nos últimos 30 minutos.",
+          "id": 31,
+          "createdAt": "2026-03-18T13:00:28.078Z",
+          "updatedAt": "2026-03-18T13:00:28.078Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha foi encontrado no intervalo solicitado, portanto não há problemas identificados.",
+          "id": 32,
+          "createdAt": "2026-03-18T13:00:31.340Z",
+          "updatedAt": "2026-03-18T13:00:31.340Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou operação foi encontrado no intervalo de 30 minutos solicitado (2026-03-18 09:30:32 a 10:00:32). Sem dados disponíveis não é possível identificar falhas ou anomalias.",
+          "id": 33,
+          "createdAt": "2026-03-18T13:00:34.786Z",
+          "updatedAt": "2026-03-18T13:00:34.786Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "All systems operational.",
+          "id": 34,
+          "createdAt": "2026-03-18T13:00:50.321Z",
+          "updatedAt": "2026-03-18T13:00:50.321Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum problema detectado nos últimos 30 minutos.",
+          "id": 35,
+          "createdAt": "2026-03-18T13:00:55.630Z",
+          "updatedAt": "2026-03-18T13:00:55.630Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha foi encontrado para o período solicitado. Não há dados disponíveis na base para a data 2026-03-18.",
+          "id": 36,
+          "createdAt": "2026-03-18T13:01:01.459Z",
+          "updatedAt": "2026-03-18T13:01:01.459Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component disponível no intervalo solicitado, portanto não há dados para analisar possíveis problemas.",
+          "id": 37,
+          "createdAt": "2026-03-18T13:31:01.163Z",
+          "updatedAt": "2026-03-18T13:31:01.163Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado para o período solicitado. Não há dados disponíveis para análise.",
+          "id": 38,
+          "createdAt": "2026-03-18T13:31:04.795Z",
+          "updatedAt": "2026-03-18T13:31:04.795Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "entity Entity_Alpha: component Comp_ID_X não comunicou e tem dados ausentes; component Comp_ID_X tem active power zero.",
+          "noProblemFound": "",
+          "id": 39,
+          "createdAt": "2026-03-18T13:31:10.928Z",
+          "updatedAt": "2026-03-18T13:31:10.928Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou status de componentes encontrado entre 18/03/2026 10:30 e 18/03/2026 11:00, portanto não há problemas identificáveis neste intervalo.",
+          "id": 40,
+          "createdAt": "2026-03-18T14:00:30.004Z",
+          "updatedAt": "2026-03-18T14:00:30.004Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou falha foi encontrado no intervalo de 30 minutos solicitado (2026-03-18T10:30:31.536-03:00 a 2026-03-18T11:00:31.536-03:00). Assim, não há problemas identificados nos componentes ou na entity para esse período.",
+          "id": 41,
+          "createdAt": "2026-03-18T14:00:35.239Z",
+          "updatedAt": "2026-03-18T14:00:35.239Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou status de componentes foi encontrado no período solicitado (2026-03-18 10:30:36 a 11:00:36 -03:00). Portanto, não há dados para indicar problemas de potência, performance, temperatura ou comunicação nesse intervalo.",
+          "id": 42,
+          "createdAt": "2026-03-18T14:00:41.122Z",
+          "updatedAt": "2026-03-18T14:00:41.122Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no período solicitado, portanto não há problemas a relatar.",
+          "id": 43,
+          "createdAt": "2026-03-18T14:00:47.001Z",
+          "updatedAt": "2026-03-18T14:00:47.001Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no período especificado, portanto não há problemas detectados.",
+          "id": 44,
+          "createdAt": "2026-03-18T14:00:54.257Z",
+          "updatedAt": "2026-03-18T14:00:54.257Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de produção ou status de componentes foi encontrado entre 18/03/2026 10:30 e 18/03/2026 11:00, portanto não há dados para identificar problemas.",
+          "id": 45,
+          "createdAt": "2026-03-18T14:00:58.376Z",
+          "updatedAt": "2026-03-18T14:00:58.376Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entities ou componentes encontrado no período informado. Não há dados para avaliar potencia ativa, performance ou temperatura.",
+          "id": 46,
+          "createdAt": "2026-03-18T14:01:03.387Z",
+          "updatedAt": "2026-03-18T14:01:03.387Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problem found.",
+          "id": 47,
+          "createdAt": "2026-03-18T14:32:52.812Z",
+          "updatedAt": "2026-03-18T14:32:52.812Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de conexão foi encontrado entre 11:02 e 11:32. Não há dados para avaliar potencia ativa, performance, temperatura ou comunicação. Portanto, não há problemas identificados nesse intervalo.",
+          "id": 48,
+          "createdAt": "2026-03-18T14:32:58.339Z",
+          "updatedAt": "2026-03-18T14:32:58.339Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "component Comp_ID_X não comunicou (last_connected_at null) e possui dados ausentes (kWh, pr, MaxTemp). component Comp_ID_X apresentou active power zero (last_power_reading = 0). Nenhum component excedeu 80°C nem tem performance ratio abaixo de 70%.",
+          "noProblemFound": "",
+          "id": 49,
+          "createdAt": "2026-03-18T14:33:02.819Z",
+          "updatedAt": "2026-03-18T14:33:02.819Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "No issues detected.",
+          "noProblemFound": "All systems operational.",
+          "id": 50,
+          "createdAt": "2026-03-18T15:01:22.116Z",
+          "updatedAt": "2026-03-18T15:01:22.116Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum problema identificado nos últimos 30 minutos.",
+          "id": 51,
+          "createdAt": "2026-03-18T15:01:28.034Z",
+          "updatedAt": "2026-03-18T15:01:28.034Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Alpha: component Comp_ID_X não comunicou nos últimos 30 minutos; component Comp_ID_X tem active power zero",
+          "noProblemFound": "",
+          "id": 52,
+          "createdAt": "2026-03-18T15:01:41.469Z",
+          "updatedAt": "2026-03-18T15:01:41.469Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Plant Entity_Zeta: components Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4 all exhibit performance ratio (PR) below 70% within the last 30 minutes.",
+          "noProblemFound": "",
+          "id": 53,
+          "createdAt": "2026-03-18T15:01:46.369Z",
+          "updatedAt": "2026-03-18T15:01:46.369Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 54,
+          "createdAt": "2026-03-18T15:01:59.843Z",
+          "updatedAt": "2026-03-18T15:01:59.843Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Eta 2: component Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X - last_power_reading zero e não comunicou há mais de 30 minutos (last_connected_at 2025-11-05). Entity_Theta: component Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X - temperatura >80°C. Entity_Iota: component Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X - temperatura >80°C.",
+          "noProblemFound": "",
+          "id": 55,
+          "createdAt": "2026-03-18T15:02:08.609Z",
+          "updatedAt": "2026-03-18T15:02:08.609Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment apresentou problemas nos últimos 30 minutos.",
+          "id": 56,
+          "createdAt": "2026-03-18T15:02:15.219Z",
+          "updatedAt": "2026-03-18T15:02:15.219Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "In Penápolis, components Inv1_1_3, Inv2_1_1, Inv2_1_3 had zero active power. In Padre Bernardo, components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X had zero active power and components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X had performance ratio below 70%. In São José do Rio Pardo, components Comp_ID_X_03 and Comp_ID_X_01 had zero active power. In Entity_Kappa, components Comp_ID_X, Comp_ID_X, Comp_ID_X had zero active power and many components had performance ratio below 70% (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X).",
+          "noProblemFound": "",
+          "id": 57,
+          "createdAt": "2026-03-18T15:31:02.567Z",
+          "updatedAt": "2026-03-18T15:31:02.567Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no intervalo especificado, portanto não há dados para avaliar.",
+          "id": 58,
+          "createdAt": "2026-03-18T15:31:06.692Z",
+          "updatedAt": "2026-03-18T15:31:06.692Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Problemas detectados: component Comp_ID_X (Entity_Alpha) com active power zero; component Comp_ID_X (Entity_Alpha) sem comunicação (last_connected_at nulo) e active power nula.",
+          "noProblemFound": "",
+          "id": 59,
+          "createdAt": "2026-03-18T15:31:11.281Z",
+          "updatedAt": "2026-03-18T15:31:11.281Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Performance ratio abaixo de 70% em todos os componentes da entity Entity_Zeta. Nenhum component com active power zero, temperatura acima de 80°C ou falta de comunicação superior a 30 minutos.",
+          "noProblemFound": "",
+          "id": 60,
+          "createdAt": "2026-03-18T15:31:15.394Z",
+          "updatedAt": "2026-03-18T15:31:15.394Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Problemas detectados nos últimos 30 minutos: 1) components com active power zero: Entity_Beta – Comp_ID_Y, Comp_ID_Y. 2) components com performance ratio abaixo de 70%: Entity_Mu – Comp_ID_Y (65,99); Entity_Delta 3 – Comp_ID_Z (66,94); Entity_Gamma 2 – Comp_ID_Z (22,46); Entity_Lambda – INV_1_G (62,12), INV_1_H (62,22); Entity_Gamma 4 – Comp_ID_Y (67,58), Comp_ID_Y (61,3); Entity_Delta 1 – Comp_ID_Z (63,98). 3) components com temperatura acima de 80°C: Entity_Mu – Comp_ID_Y (81,7), Comp_ID_Y (80), Comp_ID_Y (80,7), Comp_ID_Y (80,2); Entity_Beta – Comp_ID_Y (80,7), Comp_ID_Y (80,3), Comp_ID_Y (83,3), Comp_ID_Y (82,1), Comp_ID_Y (79,4), Comp_ID_Y (81,5), Comp_ID_Y (81,5), Comp_ID_Y (82,6); 4) Nenhum component não comunicou mais de 30 minutos.",
+          "noProblemFound": "",
+          "id": 61,
+          "createdAt": "2026-03-18T15:31:24.535Z",
+          "updatedAt": "2026-03-18T15:31:24.535Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Problemas identificados: 1) entity Entity_Theta: 10 componentes com temperatura >80°C (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X). 2) entity Entity_Eta 2: todos os 4 componentes apresentaram active power zero e não comunicaram há mais de 30 minutos (última conexão 2025-11-05). 3) entity Entity_Iota: 15 componentes com temperatura >80°C (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X). 4) entity Entity_Eta: component Comp_ID_X com performance ratio 66.51% (abaixo de 70%).",
+          "noProblemFound": "",
+          "id": 62,
+          "createdAt": "2026-03-18T15:31:38.970Z",
+          "updatedAt": "2026-03-18T15:31:38.970Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado entre 2026-03-18T12:01:40.477-03:00 e 2026-03-18T12:31:40.477-03:00, portanto não há evidências de problemas nesse intervalo.",
+          "id": 63,
+          "createdAt": "2026-03-18T15:31:49.440Z",
+          "updatedAt": "2026-03-18T15:31:49.440Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Missing required field in the input data.",
+          "noProblemFound": "",
+          "id": 64,
+          "createdAt": "2026-03-18T16:01:17.427Z",
+          "updatedAt": "2026-03-18T16:01:17.427Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos especificado. Portanto, não há evidências de problemas.",
+          "id": 65,
+          "createdAt": "2026-03-18T16:01:20.642Z",
+          "updatedAt": "2026-03-18T16:01:20.642Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "entity Entity_Alpha: component Comp_ID_X não comunicou (last_connected_at null). component Comp_ID_X apresentou active power zero (last_power_reading = 0).",
+          "noProblemFound": "",
+          "id": 66,
+          "createdAt": "2026-03-18T16:01:24.893Z",
+          "updatedAt": "2026-03-18T16:01:24.893Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Performance ratio abaixo de 70% em 23 componentes da entity Entity_Zeta; temperatura acima de 80°C em Comp_ID_X_4 (80,4°C).",
+          "noProblemFound": "",
+          "id": 67,
+          "createdAt": "2026-03-18T16:01:29.229Z",
+          "updatedAt": "2026-03-18T16:01:29.229Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Problemas identificados nos últimos 30 minutos:\n- Entity_Mu: components com PR abaixo de 70%: Comp_ID_Y, Comp_ID_Y, Comp_ID_Y. components com temperatura >80°C: Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y.\n- Entity_Delta 1: components com PR abaixo de 70%: Comp_ID_Z, Comp_ID_Z, Comp_ID_Z. component com temperatura >80°C: Comp_ID_Z.\n- Entity_Gamma 2: components com PR abaixo de 70%: Comp_ID_Y2, Comp_ID_Y3.\n- Entity_Beta: components com active power zero: Comp_ID_Y, Comp_ID_Y.\n- Nenhum component apresentou comunicação interrompida por mais de 30 minutos.",
+          "noProblemFound": "",
+          "id": 68,
+          "createdAt": "2026-03-18T16:01:37.444Z",
+          "updatedAt": "2026-03-18T16:01:37.444Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com temperatura >80°C. Entity_Eta2: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com active power zero e sem comunicação nos últimos 30 minutos. Entity_Iota: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com temperatura >80°C. Entity_Eta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com performance ratio abaixo de 70%.",
+          "noProblemFound": "",
+          "id": 69,
+          "createdAt": "2026-03-18T16:01:44.263Z",
+          "updatedAt": "2026-03-18T16:01:44.263Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entities ou componentes dentro do intervalo de tempo informado, portanto não há evidências de problemas.",
+          "id": 70,
+          "createdAt": "2026-03-18T16:01:48.713Z",
+          "updatedAt": "2026-03-18T16:01:48.713Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Missing required field",
+          "noProblemFound": "",
+          "id": 71,
+          "createdAt": "2026-03-18T16:31:09.489Z",
+          "updatedAt": "2026-03-18T16:31:09.489Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos especificado (de 2026-03-18T13:01:11.067-03:00 a 2026-03-18T13:31:11.067-03:00). Portanto, não há evidências de problemas de potência, performance, temperatura, comunicação ou outros indicadores de falha nesse período.",
+          "id": 72,
+          "createdAt": "2026-03-18T16:31:14.579Z",
+          "updatedAt": "2026-03-18T16:31:14.579Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Na entity Entity_Alpha, o component Comp_ID_X apresentou active power zero e não comunicou nos últimos 30 minutos; o component Comp_ID_X não possui registro de última conexão nem de active power, indicando falha de comunicação e ausência de produção. Nenhum component excedeu 80°C nem apresentou performance ratio abaixo de 70% dentro do período analisado.",
+          "noProblemFound": "",
+          "id": 73,
+          "createdAt": "2026-03-18T16:31:19.330Z",
+          "updatedAt": "2026-03-18T16:31:19.330Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Performance ratio abaixo de 70% em 21 componentes da entity Entity_Zeta. component Comp_ID_X_4 apresenta temperatura máxima de gabinete de 80.4°C, acima do limite de 80°C.",
+          "noProblemFound": "",
+          "id": 74,
+          "createdAt": "2026-03-18T16:31:27.075Z",
+          "updatedAt": "2026-03-18T16:31:27.075Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problem found.",
+          "id": 75,
+          "createdAt": "2026-03-18T16:31:37.473Z",
+          "updatedAt": "2026-03-18T16:31:37.473Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com temperatura >80°C. Entity_Eta2: Todos os componentes (Comp_ID_X-Comp_ID_X) com active power zero e não comunicaram há mais de 30 minutos. Entity_Iota: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com temperatura >80°C. Entity_Eta: component Comp_ID_X com performance ratio 64.69% abaixo de 70%.",
+          "noProblemFound": "",
+          "id": 76,
+          "createdAt": "2026-03-18T16:31:53.184Z",
+          "updatedAt": "2026-03-18T16:31:53.184Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos entre 2026-03-18T13:01:54.676-03:00 e 2026-03-18T13:31:54.676-03:00. Portanto, não há problemas a relatar.",
+          "id": 77,
+          "createdAt": "2026-03-18T16:31:59.050Z",
+          "updatedAt": "2026-03-18T16:31:59.050Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Kappa: 13 componentes com active power zero (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X) e 5 com PR abaixo de 70% (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X). Padre Bernardo: 30 componentes com PR abaixo de 70% (Comp_ID_X a Comp_ID_X). São José do Belmonte: 28 componentes com PR abaixo de 70% (Comp_ID_X a Comp_ID_X). São João do Piauí: 28 componentes com PR abaixo de 70% (Comp_ID_X a Comp_ID_X) e 1 component com temperatura superior a 80°C (Comp_ID_X).",
+          "noProblemFound": "",
+          "id": 78,
+          "createdAt": "2026-03-18T17:00:43.486Z",
+          "updatedAt": "2026-03-18T17:00:43.486Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos especificado. Portanto, não há dados disponíveis para indicar problemas de active power, performance ratio, temperatura ou falha de comunicação.",
+          "id": 79,
+          "createdAt": "2026-03-18T17:00:49.051Z",
+          "updatedAt": "2026-03-18T17:00:49.051Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "component Comp_ID_X apresentou active power zero. component Comp_ID_X não comunicou (last_connected_at null) e não possui leitura de active power.",
+          "noProblemFound": "",
+          "id": 80,
+          "createdAt": "2026-03-18T17:00:56.544Z",
+          "updatedAt": "2026-03-18T17:00:56.544Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Plant Entity_Zeta: Components Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4 all have performance ratio below 70%. Component Comp_ID_X_4 also has MaxTemp 80.4°C above 80°C.",
+          "noProblemFound": "",
+          "id": 81,
+          "createdAt": "2026-03-18T17:01:06.595Z",
+          "updatedAt": "2026-03-18T17:01:06.595Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problems found.",
+          "id": 82,
+          "createdAt": "2026-03-18T17:01:17.938Z",
+          "updatedAt": "2026-03-18T17:01:17.938Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components com temperatura >80°C – Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X. Entity_Eta 2: components Comp_ID_X a Comp_ID_X com active power zero e última comunicação há mais de 30 minutos. Entity_Eta: component Comp_ID_X com performance ratio 64,67% (abaixo de 70%). Entity_Iota: components com temperatura >80°C – Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X.",
+          "noProblemFound": "",
+          "id": 83,
+          "createdAt": "2026-03-18T17:01:34.235Z",
+          "updatedAt": "2026-03-18T17:01:34.235Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado nos últimos 30 minutos, portanto não há problemas detectados.",
+          "id": 84,
+          "createdAt": "2026-03-18T17:03:55.713Z",
+          "updatedAt": "2026-03-18T17:03:55.713Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Unexpected error encountered during processing",
+          "noProblemFound": "No issues detected",
+          "id": 85,
+          "createdAt": "2026-03-18T17:30:40.384Z",
+          "updatedAt": "2026-03-18T17:30:40.384Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado entre 2026-03-18T14:00:41.888-03:00 e 2026-03-18T14:30:41.888-03:00, portanto não há problemas a relatar.",
+          "id": 86,
+          "createdAt": "2026-03-18T17:30:44.463Z",
+          "updatedAt": "2026-03-18T17:30:44.463Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Alpha: Comp_ID_X - Falha de comunicação (last_connected_at null, last_power_reading null); Comp_ID_X - Potência ativa zero.",
+          "noProblemFound": "",
+          "id": 87,
+          "createdAt": "2026-03-18T17:30:49.385Z",
+          "updatedAt": "2026-03-18T17:30:49.385Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Zeta: components com performance ratio abaixo de 70%: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4. component com temperatura acima de 80°C: Comp_ID_X_4.",
+          "noProblemFound": "",
+          "id": 88,
+          "createdAt": "2026-03-18T17:30:55.265Z",
+          "updatedAt": "2026-03-18T17:30:55.265Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Mu: Comp_ID_Y (PR 65.48, Temp 81.1°C), Comp_ID_Y (PR 68.83), Comp_ID_Y (PR 69.58), several components with temperatures >80°C (Comp_ID_Y 80.6°C, Comp_ID_Y 81.8°C, Comp_ID_Y 80.7°C, Comp_ID_Y 80.7°C, Comp_ID_Y 80.7°C). Entity_Delta 1: Comp_ID_Z (Temp 84.5°C), Comp_ID_Z (PR 64.67). Entity_Gamma 4: Comp_ID_Y (Temp 82.8°C), Comp_ID_Y (Temp 81.9°C, PR 56.89), Comp_ID_Y (PR 64.65). Entity_Gamma 2: Comp_ID_Z (PR 23.01), Comp_ID_Z (PR 58.31). No components had last_power_reading = 0 or were silent for >30 minutes.",
+          "noProblemFound": "",
+          "id": 89,
+          "createdAt": "2026-03-18T17:31:08.616Z",
+          "updatedAt": "2026-03-18T17:31:08.616Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com temperatura acima de 80°C. Entity_Eta 2: components Comp_ID_X a Comp_ID_X não comunicaram há mais de 30 minutos e apresentaram active power zero. Entity_Eta: component Comp_ID_X com performance ratio abaixo de 70%. Entity_Iota: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X com temperatura acima de 80°C.",
+          "noProblemFound": "",
+          "id": 90,
+          "createdAt": "2026-03-18T17:31:18.223Z",
+          "updatedAt": "2026-03-18T17:31:18.223Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no intervalo especificado.",
+          "id": 91,
+          "createdAt": "2026-03-18T17:31:23.743Z",
+          "updatedAt": "2026-03-18T17:31:23.743Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "The system encountered a missing dependency error.",
+          "noProblemFound": "All checks passed successfully.",
+          "id": 92,
+          "createdAt": "2026-03-18T18:00:50.503Z",
+          "updatedAt": "2026-03-18T18:00:50.503Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de comunicação de entities ou componentes foi encontrado entre 2026-03-18T14:30:51.997-03:00 e 2026-03-18T15:00:51.997-03:00, portanto não há evidências de problemas nos últimos 30 minutos.",
+          "id": 93,
+          "createdAt": "2026-03-18T18:00:57.704Z",
+          "updatedAt": "2026-03-18T18:00:57.704Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "entity Entity_Alpha: component Comp_ID_X não comunicou (last_connected_at null, last_power_reading null). component Comp_ID_X tem active power zero.",
+          "noProblemFound": "",
+          "id": 94,
+          "createdAt": "2026-03-18T18:01:02.228Z",
+          "updatedAt": "2026-03-18T18:01:02.228Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Zeta: Todos os componentes têm PR abaixo de 70%. Comp_ID_X_4 apresenta temperatura máxima de gabinete 80.4°C (acima de 80°C).",
+          "noProblemFound": "",
+          "id": 95,
+          "createdAt": "2026-03-18T18:01:06.044Z",
+          "updatedAt": "2026-03-18T18:01:06.044Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 96,
+          "createdAt": "2026-03-18T18:01:18.026Z",
+          "updatedAt": "2026-03-18T18:01:18.026Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X apresentam temperatura >80°C. Entity_Eta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X têm PR <70%. Entity_Eta 2: components Comp_ID_X-4 têm produção zero e não se comunicaram há mais de 30 minutos. Entity_Iota: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X apresentam temperatura >80°C.",
+          "noProblemFound": "",
+          "id": 97,
+          "createdAt": "2026-03-18T18:01:24.867Z",
+          "updatedAt": "2026-03-18T18:01:24.867Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment apresentou problemas no intervalo analisado.",
+          "id": 98,
+          "createdAt": "2026-03-18T18:01:30.417Z",
+          "updatedAt": "2026-03-18T18:01:30.417Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Kappa: Component Comp_ID_X has zero active power. Components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X have performance ratio below 70%. No temperature or communication issues detected.",
+          "noProblemFound": "",
+          "id": 99,
+          "createdAt": "2026-03-18T18:30:38.848Z",
+          "updatedAt": "2026-03-18T18:30:38.848Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment se conectou entre 2026-03-18T15:00:40.329-03:00 e 2026-03-18T15:30:40.329-03:00, portanto não há registros de potencia ativa zero, performance abaixo de 70%, temperatura acima de 80°C ou falhas de comunicação nesse intervalo.",
+          "id": 100,
+          "createdAt": "2026-03-18T18:30:43.916Z",
+          "updatedAt": "2026-03-18T18:30:43.916Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Component Comp_ID_X do plant Entity_Alpha tem last_power_reading igual a zero, indicando possível parada ou falha de produção. Não foram detectados outros problemas (temperaturas acima de 80°C, performance ratio abaixo de 70% ou falta de comunicação superior a 30 minutos).",
+          "noProblemFound": "",
+          "id": 101,
+          "createdAt": "2026-03-18T18:30:54.583Z",
+          "updatedAt": "2026-03-18T18:30:54.583Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Zeta: Todos os components têm performance ratio abaixo de 70%. O component Comp_ID_X_4 apresenta temperatura de gabinete acima de 80°C.",
+          "noProblemFound": "",
+          "id": 102,
+          "createdAt": "2026-03-18T18:31:01.209Z",
+          "updatedAt": "2026-03-18T18:31:01.209Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Components with zero active power (Entity_Beta Comp_ID_Y, Comp_ID_Y). Low performance ratio (<70%) observed in several plants: Entity_Delta 3 (Comp_ID_Z, Comp_ID_Z), Entity_Delta 1 (Comp_ID_Z), Entity_Gamma 2 (Comp_ID_Z), Entity_Lambda (INV_1_G, INV_1_H), Entity_Gamma 4 (Comp_ID_Z). Temperatures above 80°C detected in multiple components: Entity_Beta (Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y), Entity_Delta 1 (Comp_ID_Z), Entity_Gamma 4 (Comp_ID_Y, Comp_ID_Y).",
+          "noProblemFound": "",
+          "id": 103,
+          "createdAt": "2026-03-18T18:31:09.410Z",
+          "updatedAt": "2026-03-18T18:31:09.410Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: componentes com temperatura >80°C: Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X. Entity_Eta: component Comp_ID_X com performance ratio abaixo de 70%. Entity_Iota: componentes com temperatura >80°C: Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X. Entity_Eta 2: componentes com zero active power e sem comunicação >30 min.",
+          "noProblemFound": "",
+          "id": 104,
+          "createdAt": "2026-03-18T18:31:15.707Z",
+          "updatedAt": "2026-03-18T18:31:15.707Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado com atividade entre 2026-03-18T15:01:17.216-03:00 e 2026-03-18T15:31:17.216-03:00, portanto não há problemas a relatar.",
+          "id": 105,
+          "createdAt": "2026-03-18T18:31:20.721Z",
+          "updatedAt": "2026-03-18T18:31:20.721Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 106,
+          "createdAt": "2026-03-18T19:02:02.588Z",
+          "updatedAt": "2026-03-18T19:02:02.588Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment reportou dados entre 2026-03-18T15:32:04.865-03:00 e 2026-03-18T16:02:04.865-03:00, portanto não há problemas identificados.",
+          "id": 107,
+          "createdAt": "2026-03-18T19:02:08.182Z",
+          "updatedAt": "2026-03-18T19:02:08.182Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "component Comp_ID_X apresentou active power zero na entity Entity_Alpha. Nenhum component teve performance ratio abaixo de 70%, temperatura acima de 80°C, ou falta de comunicação superior a 30 minutos.",
+          "noProblemFound": "",
+          "id": 108,
+          "createdAt": "2026-03-18T19:02:12.753Z",
+          "updatedAt": "2026-03-18T19:02:12.753Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Temperatura do component Comp_ID_X_4 excedeu 80°C (80.4°C) na entity Entity_Zeta.",
+          "noProblemFound": "",
+          "id": 109,
+          "createdAt": "2026-03-18T19:02:18.669Z",
+          "updatedAt": "2026-03-18T19:02:18.669Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 110,
+          "createdAt": "2026-03-18T19:02:31.390Z",
+          "updatedAt": "2026-03-18T19:02:31.390Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Temperaturas acima de 80°C em vários componentes da entity Entity_Theta; PR abaixo de 70 em Comp_ID_X da entity Entity_Eta; temperaturas acima de 80°C em vários componentes da entity Entity_Iota.",
+          "noProblemFound": "",
+          "id": 111,
+          "createdAt": "2026-03-18T19:02:42.557Z",
+          "updatedAt": "2026-03-18T19:02:42.557Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no intervalo especificado",
+          "id": 112,
+          "createdAt": "2026-03-18T19:02:49.638Z",
+          "updatedAt": "2026-03-18T19:02:49.638Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Kappa: components com PR abaixo de 70% (Comp_ID_X – 6.99, Comp_ID_X – 7.46, Comp_ID_X – 7.36, Comp_ID_X – 7.36, Comp_ID_X – 7.46, Comp_ID_X – 55.47, Comp_ID_X – 55.56, Comp_ID_X – 55.56) e componentes que não comunicaram há mais de 30 minutos (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X). Nenhum component apresentou temperatura >80°C nem active power zero dentro do período analisado. Penápolis: alguns componentes (Inv1_1_1, Inv1_1_3, Inv1_1_4, Inv1_1_6, Inv1_1_7, Inv1_1_8, Inv1_1_10, Inv1_1_11, Inv1_1_12, Inv1_1_13, Inv2_1_1, Inv2_1_4, Inv2_1_5, Inv2_1_6, Inv2_1_7, Inv2_1_8, Inv2_1_9, Inv2_1_10, Inv2_1_11, Inv2_1_12, Inv2_1_13) não comunicaram nas últimas 30 minutos e alguns apresentam last_power_reading zero. Nenhum component em Padre Bernardo, São José do Rio Pardo, Cordeiro, São Manuel, São José do Belmonte, São João do Piauí, Herculandia, Mococa, São Romão, Ibitinga, Itaberai ou Barbosa apresentou problemas de PR <70%, temperatura >80°C ou active power zero no intervalo analisado.",
+          "noProblemFound": "",
+          "id": 113,
+          "createdAt": "2026-03-18T19:31:02.531Z",
+          "updatedAt": "2026-03-18T19:31:02.531Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado no intervalo especificado.",
+          "id": 114,
+          "createdAt": "2026-03-18T19:31:08.754Z",
+          "updatedAt": "2026-03-18T19:31:08.754Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "entity Entity_Alpha: component Comp_ID_X não comunicou (last_connected_at null) e tem active power nula. component Comp_ID_X tem active power zero.",
+          "noProblemFound": "",
+          "id": 115,
+          "createdAt": "2026-03-18T19:31:13.312Z",
+          "updatedAt": "2026-03-18T19:31:13.312Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Performance ratio abaixo de 70% nos componentes: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4. Temperatura do gabinete acima de 80°C no component Comp_ID_X_4. Nenhum component com active power zero nem falha de comunicação há mais de 30 minutos.",
+          "noProblemFound": "",
+          "id": 116,
+          "createdAt": "2026-03-18T19:31:18.593Z",
+          "updatedAt": "2026-03-18T19:31:18.593Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problem found.",
+          "id": 117,
+          "createdAt": "2026-03-18T19:31:28.619Z",
+          "updatedAt": "2026-03-18T19:31:28.619Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X apresentam temperatura superior a 80°C. Entity_Eta 2: Todos os componentes (Comp_ID_X a Comp_ID_X) registraram active power zero e não se comunicaram desde 2025‑11‑05, indicando falha de comunicação. Entity_Eta: component Comp_ID_X tem performance ratio de 65,6%, abaixo de 70%. Entity_Iota: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X e Comp_ID_X apresentam temperatura superior a 80°C. Todos os componentes de Entity_Iota têm performance ratio nula, sugerindo falta de dados.",
+          "noProblemFound": "",
+          "id": 118,
+          "createdAt": "2026-03-18T19:31:35.259Z",
+          "updatedAt": "2026-03-18T19:31:35.259Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment reportou dados nos últimos 30 minutos, portanto não há problemas identificados.",
+          "id": 119,
+          "createdAt": "2026-03-18T19:31:40.797Z",
+          "updatedAt": "2026-03-18T19:31:40.797Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 120,
+          "createdAt": "2026-03-18T20:00:53.108Z",
+          "updatedAt": "2026-03-18T20:00:53.108Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado no intervalo de 30 minutos especificado, portanto não há evidências de problemas de comunicação, temperatura, performance ou active power nesse período.",
+          "id": 121,
+          "createdAt": "2026-03-18T20:00:59.542Z",
+          "updatedAt": "2026-03-18T20:00:59.542Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Component Comp_ID_X não comunicou nos últimos 30 minutos. Component Comp_ID_X apresentou active power zero.",
+          "noProblemFound": "",
+          "id": 122,
+          "createdAt": "2026-03-18T20:01:05.813Z",
+          "updatedAt": "2026-03-18T20:01:05.813Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Performance ratio abaixo de 70% em 18 components (Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4). Temperatura do gabinete do Comp_ID_X_4 em 80.4°C. Nenhum component com active power zero. Todos os components comunicaram dentro dos 30 minutos.",
+          "noProblemFound": "",
+          "id": 123,
+          "createdAt": "2026-03-18T20:01:14.352Z",
+          "updatedAt": "2026-03-18T20:01:14.352Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Delta 1: component Comp_ID_Z com PR 68.29% (abaixo de 70%) e component Comp_ID_Z com temperatura 85.6°C (acima de 80°C). Entity_Mu: component Comp_ID_Y com PR 65.17% (abaixo de 70%) e componentes Comp_ID_Y (80.9°C), Comp_ID_Y (82.4°C), Comp_ID_Y (81.2°C) com temperaturas acima de 80°C. Entity_Gamma 2: component Comp_ID_Z com PR 22.99% (abaixo de 70%) e component Comp_ID_Z com temperatura 80.28°C (acima de 80°C). Entity_Lambda: component INV_1_G com PR 63.26% (abaixo de 70%). Entity_Beta: componentes Comp_ID_Y (81.5°C), Comp_ID_Y (80.6°C), Comp_ID_Y (83.8°C), Comp_ID_Y (81.1°C) com temperaturas acima de 80°C. Entity_Gamma 4: component Comp_ID_Y com PR 67.41% (abaixo de 70%) e componentes Comp_ID_Y (82.8°C), Comp_ID_Y (81.9°C) com temperaturas acima de 80°C.",
+          "noProblemFound": "",
+          "id": 124,
+          "createdAt": "2026-03-18T20:01:22.552Z",
+          "updatedAt": "2026-03-18T20:01:22.552Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "components com active power zero: Entity_Eta 2 - Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X. components com PR abaixo de 70%: Entity_Eta - Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X. components com temperatura >80°C: Entity_Theta - Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X. components sem comunicação >30 min: nenhum.",
+          "noProblemFound": "",
+          "id": 125,
+          "createdAt": "2026-03-18T20:01:31.192Z",
+          "updatedAt": "2026-03-18T20:01:31.192Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado entre 2026-03-18T16:31:32.815-03:00 e 2026-03-18T17:01:32.815-03:00, portanto não há dados para indicar problemas.",
+          "id": 126,
+          "createdAt": "2026-03-18T20:01:37.899Z",
+          "updatedAt": "2026-03-18T20:01:37.899Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problem found.",
+          "id": 127,
+          "createdAt": "2026-03-18T20:30:54.928Z",
+          "updatedAt": "2026-03-18T20:30:54.928Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment reportou conexão nos últimos 30 minutos; portanto, não há dados disponíveis para análise de potencia ativa, performance, temperatura ou comunicação.",
+          "id": 128,
+          "createdAt": "2026-03-18T20:30:59.213Z",
+          "updatedAt": "2026-03-18T20:30:59.213Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Alpha: Comp_ID_X tem active power zero. Comp_ID_X não comunicou nos últimos 30 minutos.",
+          "noProblemFound": "",
+          "id": 129,
+          "createdAt": "2026-03-18T20:31:03.965Z",
+          "updatedAt": "2026-03-18T20:31:03.965Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "components com performance ratio abaixo de 70%: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_3, Comp_ID_X_4. component com temperatura acima de 80°C: Comp_ID_X_4.",
+          "noProblemFound": "",
+          "id": 130,
+          "createdAt": "2026-03-18T20:31:09.353Z",
+          "updatedAt": "2026-03-18T20:31:09.353Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "components com PR abaixo de 70: Entity_Delta 3 (Comp_ID_Z), Entity_Delta 1 (Comp_ID_Z, Comp_ID_Z), Entity_Gamma 2 (Comp_ID_Z), Entity_Lambda (Comp_ID_X_H), Entity_Beta (Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y), Entity_Gamma 4 (Comp_ID_Z), Açougue (todos os components), Canoas (todos os components), Entity_Gamma 1 (todos os components). components com temperatura >80°C: Entity_Beta (Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y, Comp_ID_Y), Entity_Gamma 4 (Comp_ID_Y). Nenhum component apresentou active power zero nem falta de comunicação superior a 30 minutos no período analisado.",
+          "noProblemFound": "",
+          "id": 131,
+          "createdAt": "2026-03-18T20:31:16.081Z",
+          "updatedAt": "2026-03-18T20:31:16.081Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X apresentam temperatura acima de 80°C; Comp_ID_X com active power zero. Entity_Eta 2: Todos os 4 componentes (Comp_ID_X‑Comp_ID_X) apresentam active power zero. Entity_Eta: components Comp_ID_X‑Comp_ID_X, Comp_ID_X‑Comp_ID_X, Comp_ID_X, Comp_ID_X têm performance ratio abaixo de 70%. Entity_Iota: components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X têm temperatura acima de 80°C. Nenhum component não comunicou há mais de 30 minutos.",
+          "noProblemFound": "",
+          "id": 132,
+          "createdAt": "2026-03-18T20:31:23.117Z",
+          "updatedAt": "2026-03-18T20:31:23.117Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado entre 2026-03-18T17:01:24.746-03:00 e 2026-03-18T17:31:24.746-03:00, portanto não há problemas identificados.",
+          "id": 133,
+          "createdAt": "2026-03-18T20:31:26.568Z",
+          "updatedAt": "2026-03-18T20:31:26.568Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problem found.",
+          "id": 134,
+          "createdAt": "2026-03-18T21:00:52.899Z",
+          "updatedAt": "2026-03-18T21:00:52.899Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de comunicação de componentes foi encontrado entre 2026-03-18T17:30:55.133-03:00 e 2026-03-18T18:00:55.133-03:00. Portanto, não há evidências de problemas nos últimos 30 minutos.",
+          "id": 135,
+          "createdAt": "2026-03-18T21:00:59.417Z",
+          "updatedAt": "2026-03-18T21:00:59.417Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Alpha: Comp_ID_X com active power zero; Entity_Alpha: Comp_ID_X não comunicou (last_connected_at nulo).",
+          "noProblemFound": "",
+          "id": 136,
+          "createdAt": "2026-03-18T21:01:07.057Z",
+          "updatedAt": "2026-03-18T21:01:07.057Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Zeta: component Comp_ID_X_2 apresenta active power zero e performance ratio 66.17% (abaixo de 70%). component Comp_ID_X_3 apresenta active power zero e performance ratio 68.98% (abaixo de 70%). component Comp_ID_X_4 apresenta performance ratio 66.9% (abaixo de 70%) e temperatura do gabinete 80.4°C (acima de 80°C).",
+          "noProblemFound": "",
+          "id": 137,
+          "createdAt": "2026-03-18T21:01:14.185Z",
+          "updatedAt": "2026-03-18T21:01:14.185Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Delta 3 – Component Comp_ID_Z tem PR abaixo de 70% (68,53). Entity_Delta 1 – Component Comp_ID_Z tem PR abaixo de 70% (68,36) e Component Comp_ID_Z apresenta temperatura acima de 80 °C (85,6 °C). Entity_Gamma 2 – Components Comp_ID_Z (PR 22,95) e Comp_ID_Z (PR 58,63) têm PR abaixo de 70%. Entity_Lambda – Components INV_1_G (PR 63,29) e INV_1_H (PR 62,75) têm PR abaixo de 70%. Entity_Epsilon – Component Comp_ID_Y tem PR acima de 90% (93,84). Entity_Gamma 4 – Component Comp_ID_Y tem PR abaixo de 70% (67,56) e Component Comp_ID_Y apresenta temperatura acima de 80 °C (82,8 °C). Entity_Mu – Component Comp_ID_Y tem temperatura acima de 80 °C (82,4 °C). Entity_Nu – Todos os components têm PR acima de 90% (entre 285,01 e 305,78).",
+          "noProblemFound": "",
+          "id": 138,
+          "createdAt": "2026-03-18T21:01:22.408Z",
+          "updatedAt": "2026-03-18T21:01:22.408Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Theta: components com temperatura >80°C: Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X; componentes com active power zero: Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X; Entity_Eta2: todos os componentes (Comp_ID_X-4) não comunicaram (última conexão 2025-11-05), active power zero, pr nulo; Entity_Eta: component Comp_ID_X com performance ratio 65.75% (<70%); Entity_Iota: componentes com temperatura >80°C: Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X;",
+          "noProblemFound": "",
+          "id": 139,
+          "createdAt": "2026-03-18T21:01:39.205Z",
+          "updatedAt": "2026-03-18T21:01:39.205Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment se conectou entre 2026-03-18T17:31:41.522-03:00 e 2026-03-18T18:01:41.522-03:00, portanto não há dados para analisar potencia, performance, temperatura ou comunicação.",
+          "id": 140,
+          "createdAt": "2026-03-18T21:01:46.259Z",
+          "updatedAt": "2026-03-18T21:01:46.259Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 141,
+          "createdAt": "2026-03-18T21:30:56.568Z",
+          "updatedAt": "2026-03-18T21:30:56.568Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado entre os horários especificados, portanto não há dados para avaliar problemas.",
+          "id": 142,
+          "createdAt": "2026-03-18T21:31:01.436Z",
+          "updatedAt": "2026-03-18T21:31:01.436Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "entity Entity_Alpha: component Comp_ID_X e Comp_ID_X apresentam active power zero; component Comp_ID_X não comunicou (last_connected_at nulo). Nenhum component excedeu temperatura de 80°C nem apresentou PR abaixo de 70%.",
+          "noProblemFound": "",
+          "id": 143,
+          "createdAt": "2026-03-18T21:31:10.363Z",
+          "updatedAt": "2026-03-18T21:31:10.363Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "components com active power zero: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4. Performance Ratio abaixo de 70%: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_3, Comp_ID_X_4. Temperaturas acima de 80°C: Comp_ID_X_4.",
+          "noProblemFound": "",
+          "id": 144,
+          "createdAt": "2026-03-18T21:31:21.972Z",
+          "updatedAt": "2026-03-18T21:31:21.972Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 145,
+          "createdAt": "2026-03-18T21:31:33.495Z",
+          "updatedAt": "2026-03-18T21:31:33.495Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "components com active power zero: Entity_Theta (todos), Entity_Eta (todos), Entity_Iota (todos). PR abaixo de 70: Entity_Eta Comp_ID_X (65.76). Temperaturas acima de 80°C: Entity_Theta vários (Comp_ID_X,8,12,13,14,23,24,27,28,30,32,34,36,37,38,39). Entity_Iota alguns (Comp_ID_X 88.1, Comp_ID_X 89, Comp_ID_X 90.3, Comp_ID_X 88.5, Comp_ID_X 91.3, Comp_ID_X 96.1, Comp_ID_X 90.6, Comp_ID_X 81.9, Comp_ID_X 90.1, Comp_ID_X 90.7, Comp_ID_X 90.7).",
+          "noProblemFound": "",
+          "id": 146,
+          "createdAt": "2026-03-18T21:31:47.599Z",
+          "updatedAt": "2026-03-18T21:31:47.599Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment foi conectado entre 2026-03-18T18:01:49.841-03:00 e 2026-03-18T18:31:49.841-03:00, portanto não há dados para avaliar potencia, performance, temperatura ou comunicação.",
+          "id": 147,
+          "createdAt": "2026-03-18T21:31:51.195Z",
+          "updatedAt": "2026-03-18T21:31:51.195Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Kappa: 26 components (Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X) report zero active power and 23 of them have performance ratio below 70%. 24 of these components (Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X) did not communicate in the last 30 minutes. No Component exceeded 80°C. Penápolis: several components (Inv1_1_1,Inv1_1_3,Inv1_1_4,Inv1_1_5,Inv1_1_6,Inv1_1_7,Inv1_1_8,Inv1_1_9,Inv2_1_1,Inv2_1_2,Inv2_1_3,Inv2_1_4,Inv2_1_5,Inv2_1_6,Inv2_1_7,Inv2_1_8,Inv2_1_9,Inv1_1_10,Inv1_1_11,Inv1_1_12,Inv1_1_13,Inv2_1_10,Inv2_1_11,Inv2_1_12,Inv2_1_13) show zero active power or null values, many with last_connected_at older than 18:30:44, and performance ratios missing or below 70%. No temperature >80°C. Barbosa: Component Inv1_1_1 has zero active power, Inv1_1_2 and Inv1_1_3 have zero active power, some components have last_connected_at older than 18:30:44, but no PR <70% or temperature >80°C. São Manuel: all components report zero active power, PR above 70% but some have last_connected_at older than 18:30:44; no temperature >80°C. São João do Piauí: many components have zero active power, PR above 70% but last_connected_at older than 18:30:44; no temperature >80°C. Padre Bernardo: many components have zero active power, some PR below 70% (Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X,Comp_ID_X) and last_connected_at older than 18:30:44; no temperature >80°C. São José do Rio Pardo: many components have zero active power, PR above 70% but last_connected_at older than 18:30:44; no temperature >80°C. Cordeiro: all components report zero active power, PR above 70%, last_connected_at older than 18:30:44; no temperature >80°C. São José do Belmonte: many components with zero active power, PR above 70% but last_connected_at older than 18:30:44; no temperature >80°C. Herculandia: all components report zero active power, PR above 70%, last_connected_at older than 18:30:44; no temperature >80°C. Mococa: many components with zero active power, PR above 70%, last_connected_at older than 18:30:44; no temperature >80°C. São Romão: all components report zero active power, PR above 70%, last_connected_at older than 18:30:44; no temperature >80°C. Ibitinga: all components report zero active power, PR above 70%, last_connected_at older than 18:30:44; no temperature >80°C. Itaberai: all components report zero active power, PR above 70%, last_connected_at older than 18:30:44; no temperature >80°C.",
+          "noProblemFound": "",
+          "id": 148,
+          "createdAt": "2026-03-18T22:00:50.298Z",
+          "updatedAt": "2026-03-18T22:00:50.298Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro de entity ou component foi encontrado com atividade nos últimos 30 minutos entre 18:30 e 19:00, portanto não há problemas detectados.",
+          "id": 149,
+          "createdAt": "2026-03-18T22:00:54.401Z",
+          "updatedAt": "2026-03-18T22:00:54.401Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Plant Entity_Alpha: Components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X have zero active power; Component Comp_ID_X has no communication within the last 30 minutes.",
+          "noProblemFound": "",
+          "id": 150,
+          "createdAt": "2026-03-18T22:01:00.825Z",
+          "updatedAt": "2026-03-18T22:01:00.825Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Problemas detectados na entity Entity_Zeta: 1) components com active power zero: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4. 2) components com performance ratio abaixo de 70%: Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_3, Comp_ID_X_4. 3) components com temperatura acima de 80°C: Comp_ID_X_4.",
+          "noProblemFound": "",
+          "id": 151,
+          "createdAt": "2026-03-18T22:01:06.040Z",
+          "updatedAt": "2026-03-18T22:01:06.040Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No problem found.",
+          "id": 152,
+          "createdAt": "2026-03-18T22:01:29.296Z",
+          "updatedAt": "2026-03-18T22:01:29.296Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "components com active power zero: Entity_Theta (todos 39), Entity_Eta (todos 20), Entity_Eta 2 (todos 4). Performance ratio abaixo de 70%: Entity_Theta (nenhum), Entity_Eta (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X). Temperaturas superiores a 80°C: Entity_Theta (Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X). components sem comunicação >30 minutos: Entity_Theta (todos 39), Entity_Eta 2 (todos 4).",
+          "noProblemFound": "",
+          "id": 153,
+          "createdAt": "2026-03-18T22:01:35.345Z",
+          "updatedAt": "2026-03-18T22:01:35.345Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum problema detectado nos últimos 30 minutos.",
+          "id": 154,
+          "createdAt": "2026-03-18T22:01:40.217Z",
+          "updatedAt": "2026-03-18T22:01:40.217Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_b",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Kappa: Components Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X have zero active power or did not communicate in the last 30 minutes; many have performance ratio below 70%. Penápolis: several components did not communicate and some have zero active power. Barbosa: all components did not communicate; some have zero active power. São Manuel: many components have zero active power. São João do Piauí: all components did not communicate; some have zero active power and temperatures above 80°C on Comp_ID_X (83.7°C), Comp_ID_X (80.8°C) and Comp_ID_X (80.2°C). São José do Rio Pardo: all components have zero active power. Cordeiro: all components have zero active power. São José do Belmonte: all components did not communicate and have zero active power. Herculandia: all components have zero active power. Mococa: all components have zero active power. São Romão: all components have zero active power. Ibitinga: all components have zero active power. Itaberai: all components have zero active power.",
+          "noProblemFound": "",
+          "id": 155,
+          "createdAt": "2026-03-18T22:30:50.587Z",
+          "updatedAt": "2026-03-18T22:30:50.587Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_c",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum registro encontrado entre 2026-03-18T19:00:52.390-03:00 e 2026-03-18T19:30:52.390-03:00, portanto não há problemas a relatar.",
+          "id": 156,
+          "createdAt": "2026-03-18T22:30:54.590Z",
+          "updatedAt": "2026-03-18T22:30:54.590Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_d",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Na entity Entity_Alpha, os componentes Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X, Comp_ID_X e Comp_ID_X apresentaram last_power_reading igual a zero nas últimas 30 minutos, indicando ausência de produção. Nenhum component excedeu 80°C, nem houve falha de comunicação superior a 30 minutos, e os valores de performance ratio (pr) não foram registrados (null), portanto não há indicação de baixo desempenho abaixo de 70%.",
+          "noProblemFound": "",
+          "id": 157,
+          "createdAt": "2026-03-18T22:31:07.371Z",
+          "updatedAt": "2026-03-18T22:31:07.371Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_e",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Entity_Zeta: components Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4, Comp_ID_X_1, Comp_ID_X_2, Comp_ID_X_3, Comp_ID_X_4 apresentam last_power_reading zero. Performance ratio abaixo de 70% em todos os componentes, exceto Comp_ID_X_1 a Comp_ID_X_4 (pr >70). Temperatura do gabinete acima de 80°C em Comp_ID_X_4 (80.4°C). Nenhum component não comunicou por mais de 30 minutos.",
+          "noProblemFound": "",
+          "id": 158,
+          "createdAt": "2026-03-18T22:31:12.453Z",
+          "updatedAt": "2026-03-18T22:31:12.453Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_f",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": true,
+          "detectedAnomalies": "Zero active power in several components, performance ratio below 70% in many, temperatures above 80°C in several, and many components have not communicated in over 30 minutes.",
+          "noProblemFound": "",
+          "id": 159,
+          "createdAt": "2026-03-18T22:31:19.521Z",
+          "updatedAt": "2026-03-18T22:31:19.521Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_g",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "No issues detected.",
+          "id": 160,
+          "createdAt": "2026-03-18T22:31:36.104Z",
+          "updatedAt": "2026-03-18T22:31:36.104Z"
+        }
+      },
+      {
+        "json": {
+          "Cliente": "client_dataset_a",
+          "Workflow": "U1p82lYYWTpC1Vs9",
+          "hasProblem": false,
+          "detectedAnomalies": "",
+          "noProblemFound": "Nenhum equipment foi registrado no período de 30 minutos informado, portanto não há dados para identificar potencia zero, performance abaixo de 70%, temperatura acima de 80°C ou falta de comunicação. Não foram encontrados problemas.",
+          "id": 161,
+          "createdAt": "2026-03-18T22:31:43.509Z",
+          "updatedAt": "2026-03-18T22:31:43.509Z"
+        }
+      }
+    ]
+  },
+  "versionId": "34e62fa3-1404-47a4-9dd4-f52a151fca11",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-14T12:16:43.163Z",
+      "createdAt": "2026-04-14T12:16:43.163Z",
+      "role": "workflow:owner",
+      "workflowId": "Hbr6rxa0WYl3FTOp",
+      "projectId": "W8sWcqcBrkOu1smK",
+      "project": {
+        "updatedAt": "2025-06-09T13:58:57.074Z",
+        "createdAt": "2025-06-09T13:56:10.068Z",
+        "id": "W8sWcqcBrkOu1smK",
+        "name": "Guilherme Pereira <guidu.projects+moliver@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "9b483db9-4235-4a16-af1b-27d1fed8b1a7"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
